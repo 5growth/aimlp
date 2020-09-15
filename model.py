@@ -1,7 +1,7 @@
 from config import db, ma
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow import fields
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 import enum
 
 
@@ -34,21 +34,22 @@ class Model(db.Model):
     # def url(self):
     #     return("/model/" + str(self.model_id) + "/url")
 
-class ModelSchema(ma.SQLAlchemySchema):
+
+class ModelSchema(SQLAlchemySchema):
     class Meta:
         model = Model
         # in production order should be avoided
         ordered = True
 
-    model_id = ma.auto_field()
-    name = ma.auto_field()
-    type =  ma.auto_field()
-    status = ma.auto_field()
-    validity = ma.auto_field()
-    training_time = ma.auto_field()
-    creator = ma.auto_field()
-    creation_time = ma.auto_field()
-    accuracy = ma.auto_field()
-    latest_update = ma.auto_field()
+    model_id = auto_field()
+    name = auto_field()
+    type =  auto_field()
+    status = auto_field()
+    validity = auto_field()
+    training_time = auto_field()
+    creator = auto_field()
+    creation_time = auto_field()
+    accuracy = auto_field()
+    latest_update = auto_field()
     # first figure out the information model for the relation with the model file path
     # url = fields.Url(dump_only=True)
