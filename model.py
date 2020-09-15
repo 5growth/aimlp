@@ -1,19 +1,35 @@
-from config import db, ma
+from config import db, ma, login_manager
 from datetime import datetime
 # from sqlalchemy.ext.hybrid import hybrid_property
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+from flask_login import UserMixin
 import enum
+
+
+# define user_loader callback to reload user object from the user ID stored in the session
+@login_manager.user_loader
+def load_user(user_id):
+    # since the user_id is just the primary key of our user table, use it in the query for the user
+    return User.query.get(int(user_id))
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+    email = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    name = db.Column(db.String(1000))
 
 
 class ModelMlEngine(str, enum.Enum):
     spark = "spark"
     bigdl = "bigdl"
 
+
 class ModelStatus(str, enum.Enum):
     trained = "trained"
     training = "training"
     not_trained = "not trained"
     training_failed = "training failed"
+
 
 class Model(db.Model):
     __tablename__ = "model"

@@ -4,11 +4,6 @@ from config import app
 from rest import controller
 
 
-@app.route('/')
-def home():
-    return "Upload a model"
-
-
 @app.route('/models/', methods=['GET'])
 def get_models():
     models = []
