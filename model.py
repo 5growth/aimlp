@@ -26,26 +26,29 @@ class Model(db.Model):
     creator = db.Column(db.String(50))
     creation_time = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
+    latest_update = db.Column(db.DateTime, default=datetime.utcnow)
+    file_name = db.Column(db.String(50))
 
     # commented till the information model for the model file path is figured out
     # @hybrid_property
     # def url(self):
     #     return("/model/" + str(self.model_id) + "/url")
 
-class ModelSchema(ma.SQLAlchemyAutoSchema):
+class ModelSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Model
         # in production order should be avoided
         ordered = True
 
-    model_id = ma.auto_field
-    name = ma.auto_field
-    type =  ma.auto_field
-    status = ma.auto_field
-    validity = ma.auto_field
-    training_time = ma.auto_field
-    creator = ma.auto_field
-    creation_time = ma.auto_field
-    accuracy = ma.auto_field
+    model_id = ma.auto_field()
+    name = ma.auto_field()
+    type =  ma.auto_field()
+    status = ma.auto_field()
+    validity = ma.auto_field()
+    training_time = ma.auto_field()
+    creator = ma.auto_field()
+    creation_time = ma.auto_field()
+    accuracy = ma.auto_field()
+    latest_update = ma.auto_field()
     # first figure out the information model for the relation with the model file path
     # url = fields.Url(dump_only=True)
