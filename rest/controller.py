@@ -24,7 +24,7 @@ def get_model_file(model_id):
         abort(409)
 
     # for each model, the model file is located in /id/file_name
-    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], id, model.file_name)
+    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], model_id, model.file_name)
     if not fs.exists(file_path):
         abort(404)
     else:

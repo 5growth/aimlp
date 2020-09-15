@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from utils import dummy_fs
+from rest.utils import dummy_fs
 try:
     import pyarrow as pa
 except ImportError:

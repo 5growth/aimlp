@@ -1,7 +1,7 @@
 from model import *
 from flask import Response, send_file
 from config import app
-import controller
+from rest import controller
 
 
 @app.route('/')

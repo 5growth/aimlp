@@ -1,6 +1,6 @@
 from config import db, ma
 from datetime import datetime
-from sqlalchemy.ext.hybrid import hybrid_property
+# from sqlalchemy.ext.hybrid import hybrid_property
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 import enum
 
