@@ -38,12 +38,14 @@ class Model(db.Model):
     type = db.Column(db.Enum(ModelMlEngine))
     status = db.Column(db.Enum(ModelStatus), default=(ModelStatus.not_trained))
     validity = db.Column(db.Boolean, default=False)
+    trainable = db.Column(db.Boolean, default=False)
     training_time = db.Column(db.DateTime)
-    creator = db.Column(db.String(50))
+    author = db.Column(db.String(50))
     creation_time = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
-    file_name = db.Column(db.String(50))
+    dataset_name = db.Column(db.String(100))
+    file_name = db.Column(db.String(100))
 
     # commented till the information model for the model file path is figured out
     # @hybrid_property
@@ -62,10 +64,13 @@ class ModelSchema(SQLAlchemySchema):
     type =  auto_field()
     status = auto_field()
     validity = auto_field()
+    trainable = auto_field()
     training_time = auto_field()
-    creator = auto_field()
+    author = auto_field()
     creation_time = auto_field()
     accuracy = auto_field()
     latest_update = auto_field()
+    dataset_name = auto_field()
+    file_name = auto_field()
     # first figure out the information model for the relation with the model file path
     # url = fields.Url(dump_only=True)

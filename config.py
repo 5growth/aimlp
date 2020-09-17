@@ -1,4 +1,5 @@
 import os
+# import subprocess
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -13,9 +14,15 @@ except ImportError:
 app = Flask("AIML Platform", template_folder="web/templates/")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config['SECRET_KEY'] = 'secret-key-goes-here'
-app.config["HDFS_ROOT_DIR"] = "/user/cpuligheddu/aiml_platform/model_files/"
-os.environ['ARROW_LIBHDFS_DIR'] = '/opt/cloudera/parcels/CDH/lib/'
+app.config["SECRET_KEY"] = "secret-key-goes-here"
+app.config["HDFS_ROOT_DIR"] = "/user/cpuligheddu/aiml_platform/"
+app.config["HDFS_MODELS_DIR"] = "model_files/"
+os.environ["ARROW_LIBHDFS_DIR"] = "/opt/cloudera/parcels/CDH/lib/"
+# os.environ["HADOOP_HOME"] = "/opt/cloudera/parcels/CDH/lib/hadoop/"
+# os.environ["CLASSPATH"] += ":" + subprocess.run(["hdfs", "classpath", "--glob"],
+#                                           capture_output=True,
+#                                           text=True).stdout.strip()
+# print(os.environ["CLASSPATH"])
 
 # Attach SQLAlchemy and Marshmallow to the Flask app
 db = SQLAlchemy(app)
@@ -38,7 +45,7 @@ app.register_blueprint(main_blueprint)
 try:
     fs = pa.hdfs.connect()
 except NameError as e:
-    app.logger.warning("Pyarrow not found. HDFS not available")
+    app.logger.warning("Pyarrow package not found. HDFS not available")
     fs = dummy_fs()
 except pa.lib.ArrowIOError as e:
     app.logger.warning(str(e) + ". HDFS not available.")

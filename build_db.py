@@ -4,7 +4,11 @@ from model import *
 if __name__ == '__main__':
     db.drop_all()
     db.create_all()
-    random_forest = Model(name="random forest for scaling", validity=True, file_name="giulia.jpg")
+    random_forest = Model(name="random forest for scaling",
+                          validity=True,
+                          author="Polito",
+                          file_name="giulia.jpg",
+                          trainable=True)
     db.session.add(random_forest)
     db.session.add(Model(model_id=4, name="test"))
     db.session.add(Model())
