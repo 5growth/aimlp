@@ -22,7 +22,9 @@ def start_training(model_id):
 
     # TODO discuss/implement points 1,2,3,5
     engine = db.get_engine()
-    training_thread = threading.Thread(target=train_model, args=(engine, model_id))
+    training_thread = threading.Thread(target=train_model,
+                                       args=(engine, model_id),
+                                       kwargs={"timeout": 600})
     training_thread.start()
 
     model.status = ModelStatus.training

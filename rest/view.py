@@ -18,7 +18,7 @@ def get_model_id(model_id):
     return Response(ModelSchema().dumps(model), mimetype='text/json')
 
 
-@app.route('/models/<model_id>/forceTraining', methods=['GET'])
+@app.route('/models/<model_id>/train', methods=['GET'])
 def train_model(model_id):
     model = controller.start_training(model_id)
     return Response(ModelSchema().dumps(model), mimetype='text/json')

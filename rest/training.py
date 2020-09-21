@@ -6,7 +6,8 @@ from rest.utils import get_scoped_session
 
 # Train a ML Model by calling spark-submit in a shell script, where parameters of the cluster are set
 # then wait for the process to finish and update the DB consequently
-def train_model(engine, model_id, timeout = None):
+def train_model(engine, model_id, timeout=None):
+    # this is a separate thread, we need a scoped session to avoid race conditions
     Session = get_scoped_session(engine)
     session = Session()
     model = session.query(Model).get(model_id)
