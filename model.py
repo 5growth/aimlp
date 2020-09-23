@@ -1,7 +1,7 @@
 from config import db, ma, login_manager
 from datetime import datetime
 # from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field, fields
 from flask_login import UserMixin
 import enum
 
@@ -12,11 +12,20 @@ def load_user(user_id):
     # since the user_id is just the primary key of our user table, use it in the query for the user
     return User.query.get(int(user_id))
 
+
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+    id = db.Column(db.Integer, primary_key=True)  # primary keys are required by SQLAlchemy
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
+
+
+class Dataset(db.Model):
+    __tablename__ = "dataset"
+    dataset_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    # type, such as HDFS, Kafka, etc.
+    file_name = db.Column(db.String(100))
 
 
 class ModelMlEngine(str, enum.Enum):
@@ -35,8 +44,9 @@ class Model(db.Model):
     __tablename__ = "model"
     model_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
+    scope = db.Column(db.String(50))
     type = db.Column(db.Enum(ModelMlEngine))
-    status = db.Column(db.Enum(ModelStatus), default=(ModelStatus.not_trained))
+    status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
     validity = db.Column(db.Boolean, default=False)
     trainable = db.Column(db.Boolean, default=False)
     training_time = db.Column(db.DateTime)
@@ -44,13 +54,24 @@ class Model(db.Model):
     creation_time = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
-    dataset_name = db.Column(db.String(100))
+    dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
+    dataset = db.relationship('Dataset')
     file_name = db.Column(db.String(100))
 
     # commented till the information model for the model file path is figured out
     # @hybrid_property
     # def url(self):
     #     return("/model/" + str(self.model_id) + "/url")
+
+
+class DatasetSchema(SQLAlchemySchema):
+    class Meta:
+        model = Dataset
+        ordered = True
+
+    dataset_id = auto_field()
+    name = auto_field()
+    file_name = auto_field()
 
 
 class ModelSchema(SQLAlchemySchema):
@@ -61,7 +82,7 @@ class ModelSchema(SQLAlchemySchema):
 
     model_id = auto_field()
     name = auto_field()
-    type =  auto_field()
+    type = auto_field()
     status = auto_field()
     validity = auto_field()
     trainable = auto_field()
@@ -70,7 +91,7 @@ class ModelSchema(SQLAlchemySchema):
     creation_time = auto_field()
     accuracy = auto_field()
     latest_update = auto_field()
-    dataset_name = auto_field()
     file_name = auto_field()
+    dataset = fields.Nested(DatasetSchema)
     # first figure out the information model for the relation with the model file path
     # url = fields.Url(dump_only=True)

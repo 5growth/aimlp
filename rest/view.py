@@ -6,9 +6,12 @@ from rest import controller
 
 @app.route('/models/', methods=['GET'])
 def get_models():
-    models = []
-    for m in Model.query.all():
-        models.append(m)
+    models = Model.query.all()
+    return Response(ModelSchema(many=True).dumps(models), mimetype='text/json')
+
+@app.route('/models/filterByScope/<scope>')
+def get_model_by_scope(scope):
+    models = Model.query.filter_by(scope=scope).all()
     return Response(ModelSchema(many=True).dumps(models), mimetype='text/json')
 
 
