@@ -8,8 +8,8 @@ if __name__ == '__main__':
     random_forest = Model(name="random forest for scaling",
                           validity=True,
                           author="Polito",
-                          file_name="giulia.jpg",
-                          trainable=True,
+                          file_name="giulia.bin",
+                          external=False,
                           dataset=scaling_dataset,
                           scope="scaling")
     db.session.add(random_forest)

@@ -16,8 +16,8 @@ import threading
 # 5. move/compress the model binary in the proper directory
 def start_training(model_id):
     model = Model.query.get_or_404(model_id)
-    # 403 Forbidden: training of not trainable models is not possible
-    if not model.trainable:
+    # 403 Forbidden: training of not external models is not possible
+    if model.external:
         abort(403)
 
     # TODO discuss/implement points 1,2,3,5

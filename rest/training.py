@@ -31,7 +31,7 @@ def train_model(engine, model_id, timeout=None):
         model.status = ModelStatus.training_failed
     else:
         model.status = ModelStatus.trained
-        model.training_time = datetime.utcnow()
+        model.training_timestamp = datetime.utcnow()
     finally:
         model.latest_update = datetime.utcnow()
         session.commit()

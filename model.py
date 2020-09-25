@@ -25,6 +25,7 @@ class Dataset(db.Model):
     dataset_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
     # type, such as HDFS, Kafka, etc.
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
     file_name = db.Column(db.String(100))
 
 
@@ -48,10 +49,10 @@ class Model(db.Model):
     type = db.Column(db.Enum(ModelMlEngine))
     status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
     validity = db.Column(db.Boolean, default=False)
-    trainable = db.Column(db.Boolean, default=False)
-    training_time = db.Column(db.DateTime)
+    external = db.Column(db.Boolean, default=False)
+    training_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
-    creation_time = db.Column(db.DateTime, default=datetime.utcnow)
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
     dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
@@ -71,7 +72,7 @@ class DatasetSchema(SQLAlchemySchema):
 
     dataset_id = auto_field()
     name = auto_field()
-    file_name = auto_field()
+    creation_timestamp = auto_field()
 
 
 class ModelSchema(SQLAlchemySchema):
@@ -85,13 +86,12 @@ class ModelSchema(SQLAlchemySchema):
     type = auto_field()
     status = auto_field()
     validity = auto_field()
-    trainable = auto_field()
-    training_time = auto_field()
+    external = auto_field()
+    training_timestamp = auto_field()
     author = auto_field()
-    creation_time = auto_field()
+    creation_timestamp = auto_field()
     accuracy = auto_field()
     latest_update = auto_field()
-    file_name = auto_field()
     dataset = fields.Nested(DatasetSchema)
     # first figure out the information model for the relation with the model file path
     # url = fields.Url(dump_only=True)
