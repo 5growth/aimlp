@@ -7,7 +7,6 @@ from model import User
 
 auth = Blueprint('auth', __name__)
 
-
 @auth.route('/login')
 def login():
     return render_template('login.html')
@@ -30,24 +29,23 @@ def login_post():
     login_user(user, remember=remember)
     return redirect(url_for('main.upload'))
 
-
 @auth.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
-
 @auth.route('/signup')
 def signup():
     return render_template('signup.html')
-
 
 @auth.route('/signup', methods=['POST'])
 def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
+    surname = request.form.get('surname')
     password = request.form.get('password')
+    affiliation = request.form.get('affiliation')
 
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
@@ -55,8 +53,12 @@ def signup_post():
         flash('Email address already exists')
         return redirect(url_for('auth.signup'))
 
+    if (email == "" or name == "" or password == "" or affiliation == ""):
+        flash('All the fields are mandatory')
+        return redirect(url_for('auth.signup'))
+
     # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'), affiliation=affiliation, surname=surname)
 
     # add the new user to the database
     db.session.add(new_user)

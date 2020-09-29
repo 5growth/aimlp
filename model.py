@@ -18,7 +18,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
-
+    surname = db.Column(db.String(1000))
+    affiliation = db.Column(db.String(1000))
 
 class Dataset(db.Model):
     __tablename__ = "dataset"
@@ -50,6 +51,7 @@ class Model(db.Model):
     status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
     validity = db.Column(db.Boolean, default=False)
     external = db.Column(db.Boolean, default=False)
+    validity_expiration_timestamp = db.Column(db.DateTime)
     training_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
     creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
