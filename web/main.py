@@ -34,9 +34,18 @@ def upload_post():
     modelAccuracy = str(request.form.get("accuracy"))
 
     #convert times
-    modelValidity = datetime.strptime(modelValidity,"%Y-%m-%d %H:%M")
-    modelTraining = datetime.strptime(modelTraining,"%Y-%m-%d %H:%M")
-    modelCreation = datetime.strptime(modelCreation,"%Y-%m-%d %H:%M")
+    try:
+        modelValidity = datetime.strptime(modelValidity,"%Y-%m-%d %H:%M")
+    except ValueError:
+        modelValidity = ""
+    try:
+        modelTraining = datetime.strptime(modelTraining,"%Y-%m-%d %H:%M")
+    except ValueError:
+        modelTraining = ""    
+    try:
+        modelCreation = datetime.strptime(modelCreation,"%Y-%m-%d %H:%M")
+    except ValueError:
+        modelCreation = ""
 
     toBeChecked = "<br/>"
     if (modelName == "None" or modelName == ""):
@@ -51,14 +60,14 @@ def upload_post():
         toBeChecked = toBeChecked+"* Training Time is wrong [cannot be empty]<br/>"
     if (modelAccuracy == "" ):
     	modelAccuracy = None
-    if (modelAccuracy.find(",")!=-1):
+    elif (modelAccuracy.find(",")!=-1):
         print(modelAccuracy)
         print("Entered")
         modelAccuracy=modelAccuracy.replace(',','.')
         print(modelAccuracy)
     try:
         float(modelAccuracy)
-    except ValueError:
+    except (ValueError, TypeError):
         modelAccuracy = None
 
     if modelFilename != '':
