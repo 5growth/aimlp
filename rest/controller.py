@@ -20,16 +20,15 @@ def start_training(model_id):
     if model.external:
         abort(403)
 
+    model.status = ModelStatus.training
+    model.latest_update = datetime.utcnow()
+    db.session.commit()
     # TODO discuss/implement points 1,2,3,5
     engine = db.get_engine()
     training_thread = threading.Thread(target=train_model,
                                        args=(engine, model_id),
                                        kwargs={"timeout": 600})
     training_thread.start()
-
-    model.status = ModelStatus.training
-    model.latest_update = datetime.utcnow()
-    db.session.commit()
     return model
 
 
@@ -41,7 +40,7 @@ def get_model_file(model_id):
         abort(403)
 
     # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>
-    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], model_id, model.file_name)
+    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], model.file_name)
     # 503 Service unavailable: model file should be available but cannot be found in HDFS
     if not fs.exists(file_path):
         abort(503)
