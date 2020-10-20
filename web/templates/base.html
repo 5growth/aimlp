@@ -24,9 +24,16 @@
                                 </a>
                                 {% endif %}
                                 {% if current_user.is_authenticated %}
-                                <a href="{{ url_for('main.upload') }}" class="navbar-item">
-                                    Upload your model
+                                <a href="{{ url_for('main.uploadModel') }}" class="navbar-item">
+                                    Upload trained model
                                 </a>
+                                <a href="{{ url_for('main.uploadModelTBT') }}" class="navbar-item">
+                                    Upload not trained model 
+                                </a>  
+                                <a href="{{ url_for('main.uploadDataset') }}" class="navbar-item">
+                                    Upload dataset
+                                </a> 
+                                                                
                                 {% endif %}
                                 {% if not current_user.is_authenticated %}
                                 <a href="{{ url_for('auth.login') }}" class="navbar-item">

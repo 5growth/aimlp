@@ -11,11 +11,11 @@
 	Welcome,&nbsp;<span style="color: #091549;">{{name}}!</span>
 </h1>
 <h2 class="subtitle">
-	Fill this form to add your model</h1>
+	Fill this form to add your model to be trained</h1>
 
 <div class="column is-4 is-offset-4">
     <div class="box" align="left">
-        <form method="POST" action="/upload" enctype="multipart/form-data">
+        <form method="POST" action="/uploadModelTBT" enctype="multipart/form-data">
             
             <div class="field">
                 <div class="control">
@@ -44,29 +44,18 @@
     			</span>
     		</div>
 
-            <div class="field">
-                <div class="control">
-                	Validity expiration
-                    <input class="input is-small" type="datetime-local" name="validity" >
-                </div>
+    		<div class="field">
+                <span class="select">
+                <select  name="serviceType">
+                    <option value="None">--Select service type--</option>
+                    <option value="digital_twin">Digital Twin</option>
+                    <option value="automotive">Automotive</option>
+                </select>
+                </span>
             </div>
-            <div class="field">
-                <div class="control">
-                	Training Date
-                    <input class="input is-small" type="datetime-local" name="training" >
-                </div>
-            </div>
-
-            <div class="field">
-                <div class="control">
-                    <input class="input is-medium" type="text" name="accuracy" placeholder="Model accuracy (optional)" autofocus="">
-                </div>
-            </div>
-
 
         	<br /> 
-            <h2 style="text-align: left;"><strong><input type="file" name="file" accept=".h5" /></strong></h2>
-
+            <h2 style="text-align: left;"><strong><input type="file" name="file" accept=".jar,.h5" /></strong></h2>
          	<br /> 
 
         	<h2 style="text-align: center;"><strong><input class="button is-block is-info is-large is-fullwidth" type="submit" value="Submit" /></strong></h2>
@@ -98,14 +87,11 @@
         <span style="color:#999999";>Model Name:</span> {{modelName}} <br/>
         <span style="color:#999999";>Model Scope:</span> {{modelScope}} <br/>
         <span style="color:#999999";>Model Type:</span> {{modelType}} <br/>
-        <span style="color:#999999";>Upload Date:</span> {{modelCreation}} <br/>
-        <span style="color:#999999";>Validity Expiration:</span> {{modelValidity}} <br/>
-        <span style="color:#999999";>Training Date:</span> {{modelTraining}} <br/>
-        <span style="color:#999999";>Model Accuracy:</span> {{modelAccuracy}} <br/>
+        <span style="color:#999999";>Service Type:</span> {{serviceType}} <br/>
         <span style="color:#999999";>Model filename:</span> {{modelFilename}} <br/>
-    </div>
-
-    <h2 style="text-align: center;"> <a href="{{ url_for('main.upload') }}" class="button is-block is-info is-large is-fullwidth"/> Close </a> </h2> 
+        <br/>
+        <h2 style="text-align: center;"> <a href="{{ url_for('main.uploadModelTBT') }}" class="button is-block is-info is-large is-fullwidth"/> Close </a> </h2> 
+    </div>    
 </div>
 
 

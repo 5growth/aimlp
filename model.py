@@ -21,19 +21,14 @@ class User(UserMixin, db.Model):
     surname = db.Column(db.String(1000))
     affiliation = db.Column(db.String(1000))
 
-class Dataset(db.Model):
-    __tablename__ = "dataset"
-    dataset_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    # type, such as HDFS, Kafka, etc.
-    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
-    file_name = db.Column(db.String(100))
-
-
 class ModelMlEngine(str, enum.Enum):
     spark = "spark"
     bigdl = "bigdl"
 
+class ServiceType(str, enum.Enum):
+    automotive = "automotive"
+    digitalTwin = "digital_twin"
+    contentDelivery = "content_delivery"
 
 class ModelStatus(str, enum.Enum):
     trained = "trained"
@@ -41,6 +36,18 @@ class ModelStatus(str, enum.Enum):
     not_trained = "not trained"
     training_failed = "training failed"
 
+class Dataset(db.Model):
+    __tablename__ = "dataset"
+    dataset_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    scope = db.Column(db.String(50))
+    type = db.Column(db.Enum(ModelMlEngine))
+    service_type = db.Column(db.Enum(ServiceType))
+    validity_expiration_timestamp = db.Column(db.DateTime)
+    author = db.Column(db.String(50))
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    file_name = db.Column(db.String(100))
+    external = db.Column(db.Boolean, default=False)
 
 class Model(db.Model):
     __tablename__ = "model"
@@ -54,7 +61,7 @@ class Model(db.Model):
     validity_expiration_timestamp = db.Column(db.DateTime)
     training_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
-    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
     dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
