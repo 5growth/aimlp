@@ -1,4 +1,4 @@
-from config import db, ma, login_manager
+from config import db, login_manager
 from datetime import datetime
 # from sqlalchemy.ext.hybrid import hybrid_property
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field, fields
@@ -21,14 +21,25 @@ class User(UserMixin, db.Model):
     surname = db.Column(db.String(1000))
     affiliation = db.Column(db.String(1000))
 
+
 class ModelMlEngine(str, enum.Enum):
     spark = "spark"
     bigdl = "bigdl"
 
+
+# for semplicity, only a set of service types are available
 class ServiceType(str, enum.Enum):
     automotive = "automotive"
-    digitalTwin = "digital_twin"
-    contentDelivery = "content_delivery"
+    digital_twin = "digital_twin"
+    content_delivery = "content_delivery"
+
+
+# for semplicity, only a set of scopes are available
+class Scope(str, enum.Enum):
+    slice_sharing = "slice sharing"
+    forecasting = "forecasting"
+    scaling = "scaling"
+
 
 class ModelStatus(str, enum.Enum):
     trained = "trained"
@@ -36,12 +47,12 @@ class ModelStatus(str, enum.Enum):
     not_trained = "not trained"
     training_failed = "training failed"
 
+
 class Dataset(db.Model):
     __tablename__ = "dataset"
     dataset_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    scope = db.Column(db.String(50))
-    type = db.Column(db.Enum(ModelMlEngine))
+    scope = db.Column(db.Enum(Scope))
     service_type = db.Column(db.Enum(ServiceType))
     validity_expiration_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
@@ -49,11 +60,12 @@ class Dataset(db.Model):
     file_name = db.Column(db.String(100))
     external = db.Column(db.Boolean, default=False)
 
+
 class Model(db.Model):
     __tablename__ = "model"
     model_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    scope = db.Column(db.String(50))
+    scope = db.Column(db.Enum(Scope))
     type = db.Column(db.Enum(ModelMlEngine))
     status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
     validity = db.Column(db.Boolean, default=False)
@@ -83,7 +95,12 @@ class DatasetSchema(SQLAlchemySchema):
     dataset_id = auto_field()
     name = auto_field()
     creation_timestamp = auto_field()
-
+    scope = auto_field()
+    service_type = auto_field()
+    validity_expiration_timestamp = auto_field()
+    author = auto_field()
+    creation_timestamp = auto_field()
+    external = auto_field()
 
 class ModelSchema(SQLAlchemySchema):
     class Meta:
