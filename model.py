@@ -45,7 +45,7 @@ class Dataset(db.Model):
     service_type = db.Column(db.Enum(ServiceType))
     validity_expiration_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
-    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     file_name = db.Column(db.String(100))
     external = db.Column(db.Boolean, default=False)
 
@@ -61,7 +61,7 @@ class Model(db.Model):
     validity_expiration_timestamp = db.Column(db.DateTime)
     training_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
-    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
     dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
