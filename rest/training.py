@@ -15,8 +15,7 @@ def train_model(engine, model_id, timeout=None):
     # Launch training with spark-submit
     try:
         completed_process = subprocess.run(
-            ["./rest-spark-submit.sh", "/home/det_tesi/cpuligheddu/scaling-training-cmd.py"],
-            shell=True,
+            ["./rest-spark-submit.sh", "/home/worker/"+model.training_algorithm_file_name],
             text=True,
             timeout=timeout,
             stdout=subprocess.PIPE,

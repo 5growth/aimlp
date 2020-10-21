@@ -13,13 +13,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_DRIVER_PYTHON=./environment/bin/python \
     --master yarn \
     --deploy-mode cluster \
-    --conf "spark.yarn.jars=file://${SPARK_HOME}/jars/*,file://${GPL_LIBS}/*" \
-    --conf "spark.driver.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \
-    --conf "spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \
-    --executor-memory 10g \
-    --driver-memory 10g \
-    --executor-cores 4 \
-    --num-executors 4 \
+    --executor-memory 1g \
+    --driver-memory 1g \
+    --executor-cores 2 \
+    --num-executors 1 \
     --properties-file ${BigDL_HOME}/conf/spark-bigdl.conf \
     --jars ${BigDL_JAR_PATH} \
     --py-files ${PYTHON_API_PATH} \
@@ -27,3 +24,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.driver.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
     --conf spark.executor.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
     "$@"
+
+#    --conf "spark.yarn.jars=file://${SPARK_HOME}/jars/*,file://${GPL_LIBS}/*" \
+#    --conf "spark.driver.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \
+#    --conf "spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \

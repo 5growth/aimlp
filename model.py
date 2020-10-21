@@ -60,6 +60,7 @@ class Model(db.Model):
     dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
     dataset = db.relationship('Dataset')
     file_name = db.Column(db.String(100))
+    training_algorithm_file_name = db.Column(db.String(200))
 
     # commented till the information model for the model file path is figured out
     # @hybrid_property
