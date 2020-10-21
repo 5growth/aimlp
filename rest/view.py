@@ -1,13 +1,14 @@
 from model import *
-from flask import Response, send_file
+from flask import Response, send_file, request
 from config import app
 from rest import controller
+from rest.utils import reset_db
 
-
-@app.route('/models/', methods=['GET'])
+@app.route('/models', methods=['GET'])
 def get_models():
-    models = Model.query.all()
+    models = Model.query.filter_by(**request.args)
     return Response(ModelSchema(many=True).dumps(models), mimetype='text/json')
+
 
 @app.route('/models/filterByScope/<scope>')
 def get_model_by_scope(scope):
@@ -31,3 +32,9 @@ def train_model(model_id):
 def get_model_file(model_id):
     (model_file, file_name) = controller.get_model_file(model_id)
     return send_file(model_file, as_attachment=True, attachment_filename=file_name)
+
+
+@app.route('/reset')
+def reset_status():
+    reset_db()
+    return Response()
