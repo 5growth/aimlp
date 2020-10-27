@@ -1,12 +1,22 @@
 from model import *
-from flask import Response, send_file, request
+from flask import Response, send_file, request, abort
 from config import app
 from rest import controller
 from rest.utils import reset_db
+from sqlalchemy.exc import InvalidRequestError
+
 
 @app.route('/models', methods=['GET'])
 def get_models():
-    models = Model.query.filter_by(**request.args)
+    if not request.args:
+        models = Model.query.all()
+    else:
+        try:
+            models = Model.query.filter_by(**request.args).all()
+        except InvalidRequestError as e:
+            app.logger.error(e)
+            # Bad request if the request fails, i.e. the filtered property has not been found
+            abort(400)
     return Response(ModelSchema(many=True).dumps(models), mimetype='text/json')
 
 
@@ -36,5 +46,8 @@ def get_model_file(model_id):
 
 @app.route('/reset')
 def reset_status():
-    reset_db()
+    if "forced" in request.args:
+        reset_db(request.args["forced"])
+    else:
+        reset_db()
     return Response()

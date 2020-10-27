@@ -13,10 +13,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_DRIVER_PYTHON=./environment/bin/python \
     --master yarn \
     --deploy-mode cluster \
-    --executor-memory 1g \
-    --driver-memory 1g \
+    --executor-memory 2g \
+    --driver-memory 2g \
     --executor-cores 2 \
-    --num-executors 1 \
+    --num-executors 3 \
     --properties-file ${BigDL_HOME}/conf/spark-bigdl.conf \
     --jars ${BigDL_JAR_PATH} \
     --py-files ${PYTHON_API_PATH} \

@@ -1,8 +1,11 @@
 from config import db, login_manager
 from datetime import datetime
-# from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field, fields
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+from marshmallow import fields
 from flask_login import UserMixin
+from rest.utils import EnumField
 import enum
 
 
@@ -51,8 +54,7 @@ class ModelStatus(str, enum.Enum):
 class Dataset(db.Model):
     __tablename__ = "dataset"
     dataset_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    scope = db.Column(db.Enum(Scope))
+    name = db.Column(db.String(200))
     service_type = db.Column(db.Enum(ServiceType))
     validity_expiration_timestamp = db.Column(db.DateTime)
     author = db.Column(db.String(50))
@@ -61,12 +63,22 @@ class Dataset(db.Model):
     external = db.Column(db.Boolean, default=False)
 
 
+class TrainingAlgorithm(db.Model):
+    __tablename__ = "training_algorithm"
+    training_algorithm_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200))
+    scope = db.Column(db.Enum(Scope))
+    ml_engine = db.Column(db.Enum(ModelMlEngine))
+    author = db.Column(db.String(50))
+    creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    external = db.Column(db.Boolean, default=False)
+    file_name = db.Column(db.String(100))
+
+
 class Model(db.Model):
     __tablename__ = "model"
     model_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    scope = db.Column(db.Enum(Scope))
-    type = db.Column(db.Enum(ModelMlEngine))
+    name = db.Column(db.String(200))
     status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
     validity = db.Column(db.Boolean, default=False)
     external = db.Column(db.Boolean, default=False)
@@ -78,13 +90,24 @@ class Model(db.Model):
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
     dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.dataset_id'))
     dataset = db.relationship('Dataset')
-    file_name = db.Column(db.String(100))
+    training_algorithm_id = db.Column(db.Integer, db.ForeignKey('training_algorithm.training_algorithm_id'))
+    training_algorithm = db.relationship('TrainingAlgorithm')
+    trained_model_file_name = db.Column(db.String(100))
     training_algorithm_file_name = db.Column(db.String(200))
+    scope = association_proxy('training_algorithm', 'scope')
+    service_type = association_proxy('dataset', 'service_type')
+    ml_engine = association_proxy('training_algorithm', 'ml_engine')
 
-    # commented till the information model for the model file path is figured out
-    # @hybrid_property
-    # def url(self):
-    #     return("/model/" + str(self.model_id) + "/url")
+    @hybrid_property
+    def author(self):
+        if self.dataset.author == self.training_algorithm.author:
+            return self.dataset.author
+        elif self.dataset.author and not self.training_algorithm.author:
+            return self.dataset.author
+        elif self.training_algorithm.author and not self.dataset.author:
+            return self.dataset.author
+        else:
+            return self.training_algorithm.author + " & " + self.dataset.author
 
 
 class DatasetSchema(SQLAlchemySchema):
@@ -95,12 +118,24 @@ class DatasetSchema(SQLAlchemySchema):
     dataset_id = auto_field()
     name = auto_field()
     creation_timestamp = auto_field()
-    scope = auto_field()
     service_type = auto_field()
     validity_expiration_timestamp = auto_field()
     author = auto_field()
-    creation_timestamp = auto_field()
     external = auto_field()
+
+
+class TrainingAlgorithmSchema(SQLAlchemySchema):
+    class Meta:
+        model = TrainingAlgorithm
+        ordered = True
+
+    training_algorithm_id = auto_field()
+    name = auto_field()
+    scope = auto_field()
+    ml_engine = auto_field()
+    author = auto_field()
+    creation_timestamp = auto_field()
+
 
 class ModelSchema(SQLAlchemySchema):
     class Meta:
@@ -110,15 +145,16 @@ class ModelSchema(SQLAlchemySchema):
 
     model_id = auto_field()
     name = auto_field()
-    type = auto_field()
     status = auto_field()
+    ml_engine = EnumField(ModelMlEngine)
+    service_type = EnumField(ServiceType)
+    scope = EnumField(Scope)
     validity = auto_field()
     external = auto_field()
     training_timestamp = auto_field()
-    author = auto_field()
+    author = fields.String()
     creation_timestamp = auto_field()
     accuracy = auto_field()
     latest_update = auto_field()
     dataset = fields.Nested(DatasetSchema)
-    # first figure out the information model for the relation with the model file path
-    # url = fields.Url(dump_only=True)
+    training_algorithm = fields.Nested(TrainingAlgorithmSchema)

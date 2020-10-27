@@ -40,9 +40,9 @@ def get_model_file(model_id):
         abort(403)
 
     # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>
-    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], model.file_name)
+    file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], model.trained_model_file_name)
     # 503 Service unavailable: model file should be available but cannot be found in HDFS
     if not fs.exists(file_path):
         abort(503)
     else:
-        return fs.open(file_path), model.file_name
+        return fs.open(file_path), model.trained_model_file_name

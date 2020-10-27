@@ -19,9 +19,9 @@ app.config["HDFS_ROOT_DIR"] = "/user/worker/"
 app.config["HDFS_MODELS_DIR"] = "model_files/"
 os.environ["ARROW_LIBHDFS_DIR"] = "/opt/cloudera/parcels/CDH/lib/"
 os.environ["HADOOP_HOME"] = "/opt/cloudera/parcels/CDH/lib/hadoop/"
-os.environ["CLASSPATH"] = ":" + subprocess.run(["hdfs", "classpath", "--glob"],
-                                          capture_output=True,
-                                          text=True).stdout.strip()
+# os.environ["CLASSPATH"] = ":" + subprocess.run(["hdfs", "classpath", "--glob"],
+#                                           capture_output=True,
+#                                           text=True).stdout.strip()
 os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-8-oracle-cloudera/"
 # print(os.environ["CLASSPATH"])
 
