@@ -37,7 +37,7 @@ def get_model_file(model_id):
 
     # 403 Forbidden: cannot complete the request due to the file being unavailable
     if not model.validity:
-        abort(403)
+        abort(404)
 
     # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>
     file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], model.trained_model_file_name)

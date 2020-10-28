@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
 from rest.utils import dummy_fs
+from pathlib import Path
+
 try:
     import pyarrow as pa
 except ImportError:
@@ -15,6 +17,9 @@ app = Flask("AIML Platform", template_folder="web/templates/")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "secret-key-goes-here"
+# HDFS Namenode URI, as reported in core-site.xml
+app.config["HDFS_NAMENODE"] = "hdfs://master.awe.polito.it:8020"
+app.config["LOCAL_HDFS_DIR"] = str(Path.home().joinpath('hdfs'))
 app.config["HDFS_ROOT_DIR"] = "/user/worker/"
 app.config["HDFS_MODELS_DIR"] = "model_files/"
 os.environ["ARROW_LIBHDFS_DIR"] = "/opt/cloudera/parcels/CDH/lib/"
@@ -51,3 +56,19 @@ except NameError as e:
 except pa.lib.ArrowIOError as e:
     app.logger.warning(str(e) + ". HDFS not available.")
     fs = dummy_fs()
+
+# Mount HDFS as local file system
+if not os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
+    app.logger.info("HDFS is not accessible as local file system. Mounting now...")
+    mount_cmd = subprocess.run(
+        ["hadoop-fuse-dfs", "-oprivate", app.config["HDFS_NAMENODE"], app.config["LOCAL_HDFS_DIR"]],
+        capture_output=True,
+        text=True)
+    if mount_cmd.returncode == 0 and os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
+        app.logger.info("HDFS successfully mounted as local file system")
+    else:
+        app.logger.error("FUSE error")
+        app.logger.error(mount_cmd.stderr)
+        app.logger.error(mount_cmd.stdout)
+else:
+    app.logger.info("HDFS is already accessible as local file system")
