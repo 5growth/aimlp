@@ -73,6 +73,7 @@ class TrainingAlgorithm(db.Model):
     creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     external = db.Column(db.Boolean, default=False)
     file_name = db.Column(db.String(100))
+    output_file_name = db.Column(db.String(100))
 
 
 class Model(db.Model):
@@ -93,7 +94,6 @@ class Model(db.Model):
     training_algorithm_id = db.Column(db.Integer, db.ForeignKey('training_algorithm.training_algorithm_id'))
     training_algorithm = db.relationship('TrainingAlgorithm')
     trained_model_file_name = db.Column(db.String(100))
-    training_algorithm_file_name = db.Column(db.String(200))
     scope = association_proxy('training_algorithm', 'scope')
     service_type = association_proxy('dataset', 'service_type')
     ml_engine = association_proxy('training_algorithm', 'ml_engine')

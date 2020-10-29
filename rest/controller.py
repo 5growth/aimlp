@@ -2,7 +2,7 @@ from datetime import datetime
 from model import *
 from flask import Response, abort
 from config import app, fs
-from rest.training import train_model
+from rest.training import run_training_algorithm
 import os.path
 import threading
 
@@ -25,7 +25,7 @@ def start_training(model_id):
     db.session.commit()
     # TODO discuss/implement points 1,2,3,5
     engine = db.get_engine()
-    training_thread = threading.Thread(target=train_model,
+    training_thread = threading.Thread(target=run_training_algorithm,
                                        args=(engine, model_id),
                                        kwargs={"timeout": 600})
     training_thread.start()

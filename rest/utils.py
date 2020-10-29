@@ -34,7 +34,7 @@ def reset_db(forced=False):
     neural_network_algo = TrainingAlgorithm(name="automotive_scaling_nn_bigdl", scope=Scope.scaling,
                                             file_name="rest-bigdl-scaling-training.py", ml_engine=ModelMlEngine.bigdl,
                                             author="Polito")
-    scaling_dataset = Dataset(name="evs_scaling", service_type=ServiceType.automotive, scope=Scope.forecasting,
+    scaling_dataset = Dataset(name="evs_scaling", service_type=ServiceType.automotive,
                               author="Polito")
     random_forest = Model(name="random forest for scaling",
                           trained_model_file_name="dataset.csv",
