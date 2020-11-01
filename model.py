@@ -2,6 +2,7 @@ from config import db, login_manager
 from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.sql import case, and_
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from marshmallow import fields
 from flask_login import UserMixin
@@ -33,8 +34,8 @@ class ModelMlEngine(str, enum.Enum):
 # for semplicity, only a set of service types are available
 class ServiceType(str, enum.Enum):
     automotive = "automotive"
-    digital_twin = "digital_twin"
-    content_delivery = "content_delivery"
+    digital_twin = "digital twin"
+    content_delivery = "content delivery"
 
 
 # for semplicity, only a set of scopes are available
@@ -85,7 +86,7 @@ class Model(db.Model):
     external = db.Column(db.Boolean, default=False)
     validity_expiration_timestamp = db.Column(db.DateTime)
     training_timestamp = db.Column(db.DateTime)
-    author = db.Column(db.String(50))
+    _author = db.Column(db.String(50))
     creation_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     accuracy = db.Column(db.Float)
     latest_update = db.Column(db.DateTime, default=datetime.utcnow)
@@ -94,20 +95,65 @@ class Model(db.Model):
     training_algorithm_id = db.Column(db.Integer, db.ForeignKey('training_algorithm.training_algorithm_id'))
     training_algorithm = db.relationship('TrainingAlgorithm')
     trained_model_file_name = db.Column(db.String(100))
-    scope = association_proxy('training_algorithm', 'scope')
-    service_type = association_proxy('dataset', 'service_type')
+    _scope = db.Column(db.Enum(Scope))
+    _service_type = db.Column(db.Enum(ServiceType))
+    # scope = association_proxy('training_algorithm', 'scope')
+    # service_type = association_proxy('dataset', 'service_type')
     ml_engine = association_proxy('training_algorithm', 'ml_engine')
 
     @hybrid_property
+    def scope(self):
+        if self._scope: return self._scope
+        else: return self.training_algorithm.scope
+
+    @scope.setter
+    def scope(self, scope_value):
+        self._scope = scope_value
+
+    @scope.expression
+    def scope(cls):
+        return case([(cls._scope == None, TrainingAlgorithm.scope),], else_ = cls._scope)
+        # return TrainingAlgorithm.scope
+
+    @hybrid_property
+    def service_type(self):
+        if self._service_type: return self._service_type
+        else: return self.dataset.service_type
+
+    @service_type.setter
+    def service_type(self, service_type_value):
+        self._service_type = service_type_value
+
+    @service_type.expression
+    def service_type(cls):
+        return case([(cls._service_type == None, Dataset.service_type),], else_ = cls._service_type)
+
+    @hybrid_property
     def author(self):
-        if self.dataset.author == self.training_algorithm.author:
-            return self.dataset.author
-        elif self.dataset.author and not self.training_algorithm.author:
-            return self.dataset.author
-        elif self.training_algorithm.author and not self.dataset.author:
-            return self.dataset.author
+        if not self._author:
+            if self.dataset.author == self.training_algorithm.author:
+                return self.dataset.author
+            elif self.dataset.author and not self.training_algorithm.author:
+                return self.dataset.author
+            elif self.training_algorithm.author and not self.dataset.author:
+                return self.dataset.author
+            else:
+                return self.training_algorithm.author + " & " + self.dataset.author
         else:
-            return self.training_algorithm.author + " & " + self.dataset.author
+            return self._author
+
+    @author.setter
+    def author(self, author_value):
+        self._author = author_value
+
+    @author.expression
+    def author(cls):
+        return case([
+            (and_(cls._author == None, Dataset.author != None, TrainingAlgorithm.author != None, Dataset.author != TrainingAlgorithm.author), TrainingAlgorithm.author + " & " + Dataset.author),
+            (and_(cls._author == None, Dataset.author == TrainingAlgorithm.author), TrainingAlgorithm.author),
+            (and_(cls._author == None, Dataset.author == None, TrainingAlgorithm.author != None), TrainingAlgorithm.author),
+            (and_(cls._author == None, Dataset.author != None, TrainingAlgorithm.author == None), Dataset.author),
+        ], else_ = cls._author)
 
 
 class DatasetSchema(SQLAlchemySchema):
