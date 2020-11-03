@@ -23,6 +23,8 @@ app.config["HDFS_NAMENODE"] = "hdfs://master.awe.polito.it:8020"
 app.config["LOCAL_HDFS_DIR"] = str(Path.home().joinpath('hdfs'))
 app.config["HDFS_ROOT_DIR"] = "/user/worker/"
 app.config["HDFS_MODELS_DIR"] = "model_files/"
+app.config["HDFS_NOT_TRAINED_MODELS_DIR"] = "not_trained_model_files/"
+
 os.environ["ARROW_LIBHDFS_DIR"] = "/opt/cloudera/parcels/CDH/lib/"
 os.environ["HADOOP_HOME"] = "/opt/cloudera/parcels/CDH/lib/hadoop/"
 # os.environ["CLASSPATH"] = ":" + subprocess.run(["hdfs", "classpath", "--glob"],

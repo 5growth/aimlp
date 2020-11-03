@@ -11,12 +11,11 @@
 	Welcome,&nbsp;<span style="color: #091549;">{{name}}!</span>
 </h1>
 <h2 class="subtitle">
-	Fill this form to add your trained model</h2>
+	Fill this form to add your training algorithm, your dataset and the relative inference class</h1>
 
 <div class="column is-4 is-offset-4">
     <div class="box" align="left">
-        <form method="POST" action="/uploadModel" enctype="multipart/form-data">
-
+        <form method="POST" action="/uploadTrainingAlgorithm" enctype="multipart/form-data">
             <div class="field">
                 <div class="control">
                     <input class="input is-medium" type="text" name="name" placeholder="Name of the model" autofocus="">
@@ -31,6 +30,17 @@
 
             <div class="field">
 			    <span class="select">
+      			<select name="ml_engine">
+        			<option value="None">--Select ML engine--</option>
+                    {% for engine in engines %}
+                        <option value="{{ engine.name }}">{{ engine.value }}</option>
+                    {% endfor %}
+        		</select>
+    			</span>
+    		</div>
+
+            <div class="field">
+			    <span class="select">
       			<select name="scope">
         			<option value="None">--Select scope--</option>
                     {% for scope in scopes %}
@@ -40,30 +50,15 @@
     			</span>
     		</div>
 
-            <div class="field">
-                <div class="control">
-                	Validity expiration
-                    <input class="input is-small" type="datetime-local" name="validity" >
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                	Training Date
-                    <input class="input is-small" type="datetime-local" name="training" >
-                </div>
-            </div>
-
-            <div class="field">
-                <div class="control">
-                    <input class="input is-medium" type="text" name="accuracy" placeholder="Model accuracy (optional)" autofocus="">
-                </div>
-            </div>
-
-            <p><span style="color: #808080;">Upload your model file here...</span></p>
-            <h2 style="text-align: left;"><strong><input type="file" name="model" accept=".zip,.h5" /></strong></h2>
+        	<p><span style="color: #808080;">Upload your training algorithm file here...</span></p>
+            <h2 style="text-align: left;"><strong><input type="file" name="training_algorithm" accept=".py" /></strong></h2>
          	<br />
 
-            <p><span style="color: #808080;">Upload your inference class here...</span></p>
+            <p><span style="color: #808080;">Upload your dataset file here...</span></p>
+            <h2 style="text-align: left;"><strong><input type="file" name="dataset" accept="*" /></strong></h2>
+         	<br />
+
+         	<p><span style="color: #808080;">Upload your inference class here...</span></p>
             <h2 style="text-align: left;"><strong><input type="file" name="inf_class" accept=".py" /></strong></h2>
             <br />
 
@@ -87,7 +82,7 @@
     Welcome,&nbsp;<span style="color: #091549;">{{name}}!</span>
 </h1>
 <h2 class="subtitle">
-    Your model was loaded successfuly. Here's the information you entered:</h2>
+    Your dataset was loaded successfuly. Here's the information you entered:</h1>
 
 <div class="column is-4 is-offset-4">
     <div class="box" align="left">
@@ -96,15 +91,12 @@
         <span style="color:#999999";>Model Name:</span> {{modelName}} <br/>
         <span style="color:#999999";>Network Service Descriptor ID:</span> {{modelNSD_id}} <br/>
         <span style="color:#999999";>Model Scope:</span> {{modelScope}} <br/>
-        <span style="color:#999999";>Validity Expiration:</span> {{modelValidity}} <br/>
-        <span style="color:#999999";>Training Date:</span> {{modelTraining}} <br/>
-        <span style="color:#999999";>Model Accuracy:</span> {{modelAccuracy}} <br/>
-        <span style="color:#999999";>Model filename:</span> {{modelFilename}} <br/>
+        <span style="color:#999999";>Training Algorithm filename:</span> {{trainingAlgorithmFilename}} <br/>
         <span style="color:#999999";>Inference Class filename:</span> {{infClassFilename}} <br/>
-
+        <span style="color:#999999";>Dataset filename:</span> {{datasetFilename}} <br/>
         <br/>
-        <h2 style="text-align: center;"> <a href="{{ url_for('main.uploadModel') }}" class="button is-block is-info is-large is-fullwidth"/> Close </a> </h2> 
-    </div>    
+        <h2 style="text-align: center;"> <a href="{{ url_for('main.uploadTrainingAlgorithm') }}" class="button is-block is-info is-large is-fullwidth"/> Close </a> </h2>
+    </div>
 </div>
 
 
