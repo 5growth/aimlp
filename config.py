@@ -54,16 +54,19 @@ except pa.lib.ArrowIOError as e:
 # Mount HDFS as local file system
 if not os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
     app.logger.info("HDFS is not accessible as local file system. Mounting now...")
-    mount_cmd = subprocess.run(
-        ["hadoop-fuse-dfs", "-oprivate", app.config["HDFS_NAMENODE"], app.config["LOCAL_HDFS_DIR"]],
-        capture_output=True,
-        text=True)
-    if mount_cmd.returncode == 0 and os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
-        app.logger.info("HDFS successfully mounted as local file system")
-    else:
-        app.logger.error("FUSE error")
-        app.logger.error(mount_cmd.stderr)
-        app.logger.error(mount_cmd.stdout)
+    try:
+        mount_cmd = subprocess.run(
+            ["hadoop-fuse-dfs", "-oprivate", app.config["HDFS_NAMENODE"], app.config["LOCAL_HDFS_DIR"]],
+            capture_output=True,
+            text=True)
+        if mount_cmd.returncode == 0 and os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
+            app.logger.info("HDFS successfully mounted as local file system")
+        else:
+            app.logger.error("FUSE error")
+            app.logger.error(mount_cmd.stderr)
+            app.logger.error(mount_cmd.stdout)
+    except FileNotFoundError as e:
+        app.logger.warning(str(e) + ". HDFS could not be mounted as local file system")
 else:
     app.logger.info("HDFS is already accessible as local file system")
 
