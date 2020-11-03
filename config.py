@@ -16,6 +16,7 @@ except ImportError:
 app = Flask("AIML Platform", template_folder="web/templates/")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# app.config["SQLALCHEMY_ECHO"] = True
 app.config["SECRET_KEY"] = "secret-key-goes-here"
 # HDFS Namenode URI, as reported in core-site.xml
 app.config["HDFS_NAMENODE"] = "hdfs://master.awe.polito.it:8020"
@@ -39,13 +40,6 @@ login_manager = LoginManager()
 login_manager.login_view = 'web.auth.login'
 login_manager.init_app(app)
 
-# blueprint for auth routes in our app
-from web.auth import auth as auth_blueprint
-app.register_blueprint(auth_blueprint)
-
-# blueprint for non-auth parts of app
-from web.main import main as main_blueprint
-app.register_blueprint(main_blueprint)
 
 # Establish a connection to HDFS. Set a dummy fs object in case of issues
 try:
@@ -72,3 +66,12 @@ if not os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
         app.logger.error(mount_cmd.stdout)
 else:
     app.logger.info("HDFS is already accessible as local file system")
+
+
+# blueprint for auth routes in our app
+from web.auth import auth as auth_blueprint
+app.register_blueprint(auth_blueprint)
+
+# blueprint for non-auth parts of app
+from web.main import main as main_blueprint
+app.register_blueprint(main_blueprint)

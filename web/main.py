@@ -3,11 +3,11 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
-from config import db
-from model import Model, Dataset
+from config import db, fs, app
+from model import Model, Dataset, Scope, ServiceType
 
 main = Blueprint('main', __name__)
-valid_extension = ['.jar','.h5']
+valid_extension = ['.zip','.h5']
 valid_extensionTBT = ['.jar','.h5']
 valid_extensionDataset = ['.jar','.zip']
 
@@ -22,14 +22,14 @@ def index():
 @main.route('/uploadModel')
 @login_required
 def uploadModel():
-    return render_template('uploadModel.html', name=current_user.name)
+    return render_template('uploadModel.html', name=current_user.name, scopes=Scope, service_types=ServiceType)
 
 @main.route('/uploadModel', methods=['POST'])
 @login_required
 def uploadModel_post():
     modelName = str(request.form.get("name"))
     modelScope = str(request.form.get("scope"))
-    modelType = str(request.form.get("type"))
+    modelServiceType = str(request.form.get("service_type"))
     modelCreation = str(datetime.now().strftime("%Y-%m-%d %H:%M"))
     modelValidity = str(request.form.get("validity")).replace("T", " ")
     modelTraining = str(request.form.get("training")).replace("T", " ")
@@ -46,7 +46,7 @@ def uploadModel_post():
     try:
         modelTraining = datetime.strptime(modelTraining,"%Y-%m-%d %H:%M")
     except ValueError:
-        modelTraining = ""    
+        modelTraining = ""
     try:
         modelCreation = datetime.strptime(modelCreation,"%Y-%m-%d %H:%M")
     except ValueError:
@@ -57,7 +57,7 @@ def uploadModel_post():
         toBeChecked = toBeChecked+"* Name is wrong [cannot be empty]<br/>"
     if (modelScope == "None" or modelScope == ""):
         toBeChecked = toBeChecked+"* Scope is wrong [cannot be empty]<br/>"
-    if (modelType == "None" or modelType == ""):
+    if (modelServiceType == "None" or modelServiceType == ""):
         toBeChecked = toBeChecked+"* Type is wrong [cannot be empty]<br/>"
     if (modelValidity == "None" or modelValidity == ""):
         toBeChecked = toBeChecked+"* Validity Expiration is wrong [cannot be empty]<br/>"
@@ -88,17 +88,24 @@ def uploadModel_post():
         flash('Please check the following issues: ' + toBeChecked)
         return redirect(url_for('main.uploadModel'))
     else:
-        uploadedFile.save(os.path.join(upload_path, modelFilename))
-
-        new_model = Model(name=modelName, scope=modelScope, type=modelType, external=True, accuracy=modelAccuracy,
-            status="trained", validity_expiration_timestamp=modelValidity, training_timestamp=modelTraining, 
-            author=authorAffiliation, creation_timestamp=modelCreation, latest_update=modelCreation, file_name=modelFilename)
+        new_model = Model(name=modelName, scope=modelScope, service_type=modelServiceType, external=True, accuracy=modelAccuracy,
+            status="trained", validity=True, validity_expiration_timestamp=modelValidity, training_timestamp=modelTraining,
+            author=authorAffiliation, creation_timestamp=modelCreation, latest_update=modelCreation, trained_model_file_name=modelFilename)
         db.session.add(new_model)
         db.session.commit()
 
-        return render_template('uploadModel.html', 
+        # After the model correctness is checked against DB constraints, add the file in the HDFS
+        file_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"],
+                                 modelFilename)
+        # TODO manage the case in which fs.exists(file_path))
+        if fs.isfile(file_path):
+            app.logger.warning("A model file with the same name existed and has been overwritten")
+        fd = fs.open(file_path, mode='wb')
+        uploadedFile.save(fd)
+
+        return render_template('uploadModel.html',
             show_report=1, name=current_user.name, surname=current_user.surname, modelAccuracy=modelAccuracy,
-            modelName=modelName, modelScope=modelScope, modelType=modelType,
+            modelName=modelName, modelScope=modelScope, modelServiceType=modelServiceType,
             modelCreation=modelCreation, modelValidity=modelValidity, modelTraining=modelTraining,
             authorAffiliation=authorAffiliation, modelFilename=modelFilename)
 

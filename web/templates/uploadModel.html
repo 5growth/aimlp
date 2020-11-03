@@ -11,12 +11,12 @@
 	Welcome,&nbsp;<span style="color: #091549;">{{name}}!</span>
 </h1>
 <h2 class="subtitle">
-	Fill this form to add your trained model</h1>
+	Fill this form to add your trained model</h2>
 
 <div class="column is-4 is-offset-4">
     <div class="box" align="left">
         <form method="POST" action="/uploadModel" enctype="multipart/form-data">
-            
+
             <div class="field">
                 <div class="control">
                     <input class="input is-medium" type="text" name="name" placeholder="Name of the model" autofocus="">
@@ -25,21 +25,22 @@
 
             <div class="field">
 			    <span class="select">
-      			<select name="scope">
-        			<option value="None">--Select scope--</option>
-        			<option value="Scope1"> Scope 1</option>
-        			<option value="Scope2"> Scope 2</option>
-        			<option value="Scope3"> Scope 3</option>
+      			<select name="service_type">
+        			<option value="None">--Select service type--</option>
+                    {% for service_type in service_types %}
+                        <option value="{{ service_type.name }}">{{ service_type.value }}</option>
+                    {% endfor %}
         		</select>
     			</span>
     		</div>
 
-    		<div class="field">
+            <div class="field">
 			    <span class="select">
-      			<select  name="type">
-        			<option value="None">--Select type--</option>
-        			<option value="spark">Spark</option>
-        			<option value="bigdl">BigDL</option>
+      			<select name="scope">
+        			<option value="None">--Select scope--</option>
+                    {% for scope in scopes %}
+                        <option value="{{ scope.name }}">{{ scope.value }}</option>
+                    {% endfor %}
         		</select>
     			</span>
     		</div>
@@ -63,9 +64,9 @@
                 </div>
             </div>
 
-        	<br /> 
-            <h2 style="text-align: left;"><strong><input type="file" name="file" accept=".jar,.h5" /></strong></h2>
-         	<br /> 
+        	<br />
+            <h2 style="text-align: left;"><strong><input type="file" name="file" accept=".zip,.h5" /></strong></h2>
+         	<br />
             <!--<h2 style="text-align: left;"><strong><input type="file" name="file2" accept=".jar" /></strong></h2>
             <br />-->
 
@@ -89,15 +90,15 @@
     Welcome,&nbsp;<span style="color: #091549;">{{name}}!</span>
 </h1>
 <h2 class="subtitle">
-    Your model was loaded successfuly. Here's the information you entered:</h1>
+    Your model was loaded successfuly. Here's the information you entered:</h2>
 
 <div class="column is-4 is-offset-4">
     <div class="box" align="left">
         <span style="color:#999999";>Author:</span> {{name}} {{surname}}<br/>
         <span style="color:#999999";>Author Affiliation:</span> {{authorAffiliation}} <br/>
         <span style="color:#999999";>Model Name:</span> {{modelName}} <br/>
+        <span style="color:#999999";>Model Service Type:</span> {{modelServiceType}} <br/>
         <span style="color:#999999";>Model Scope:</span> {{modelScope}} <br/>
-        <span style="color:#999999";>Model Type:</span> {{modelType}} <br/>
         <span style="color:#999999";>Upload Date:</span> {{modelCreation}} <br/>
         <span style="color:#999999";>Validity Expiration:</span> {{modelValidity}} <br/>
         <span style="color:#999999";>Training Date:</span> {{modelTraining}} <br/>
