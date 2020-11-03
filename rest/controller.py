@@ -21,7 +21,6 @@ def start_training(model_id):
         abort(403)
 
     model.status = ModelStatus.training
-    model.latest_update = datetime.utcnow()
     db.session.commit()
     # TODO discuss/implement points 1,2,3,5
     engine = db.get_engine()
@@ -35,7 +34,7 @@ def start_training(model_id):
 def get_model_file(model_id):
     model = Model.query.get_or_404(model_id)
 
-    # 403 Forbidden: cannot complete the request due to the file being unavailable
+    # 403 Forbidden / 404 Not Found: cannot complete the request due to the file being unavailable
     if not model.validity:
         abort(404)
 

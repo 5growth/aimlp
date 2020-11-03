@@ -33,6 +33,5 @@ def run_training_algorithm(engine, model_id, timeout=None):
         model.validity = True
         model.training_timestamp = datetime.utcnow()
     finally:
-        model.latest_update = datetime.utcnow()
         session.commit()
         Session.remove()
