@@ -2,14 +2,16 @@ from flask import Blueprint, render_template, Flask, request, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
+import threading
 from datetime import datetime
 from config import db, fs, app
-from model import Model, Dataset, Scope, ModelMlEngine
+from model import Model, Dataset, Scope, ModelMlEngine, ModelStatus
+from rest.utils import zip_model_files
 
 main = Blueprint('main', __name__)
 valid_extension_model = ['.zip', '.h5']
-valid_extension_inf_class = ['.py']
-valid_extension_training_algorithm = ['.py']
+valid_extension_inf_class = ['.py', '.jar']
+valid_extension_training_algorithm = ['.py', '.jar']
 
 upload_path = 'uploaded_models'
 
@@ -94,7 +96,7 @@ def uploadModel_post():
         return redirect(url_for('main.uploadModel'))
     else:
         new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, accuracy=modelAccuracy,
-                          status="trained", validity=True, validity_expiration_timestamp=modelValidity,
+                          status=ModelStatus.processing, validity=True, validity_expiration_timestamp=modelValidity,
                           training_timestamp=modelTraining,
                           author=authorAffiliation, trained_model_file_name=modelFilename,
                           inf_class_file_name=infClassFilename)
@@ -115,6 +117,14 @@ def uploadModel_post():
 
         uploadedModel.save(fd_model)
         uploadedInfClass.save(fd_inf)
+        fd_model.close()
+        fd_inf.close()
+
+        # zip the uploaded files
+        engine = db.get_engine()
+        zip_files_thread = threading.Thread(target=zip_model_files,
+                                           args=(engine, new_model.model_id))
+        zip_files_thread.start()
 
         return render_template('uploadModel.html',
                                show_report=1, name=current_user.name, surname=current_user.surname,
@@ -197,6 +207,9 @@ def uploadTrainingAlgorithm_post():
         uploadedTrainingAlgorithm.save(fd_training_algorithm)
         uploadedInfClass.save(fd_inf)
         uploadedDataset.save(fd_dataset)
+        fd_training_algorithm.close()
+        fd_inf.close()
+        fd_dataset.close()
 
         return render_template('uploadTrainingAlgorithm.html',
                                show_report=1, name=current_user.name, surname=current_user.surname,

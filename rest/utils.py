@@ -2,8 +2,8 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from marshmallow.validate import OneOf
 from marshmallow import fields
-
-
+from zipfile import ZipFile
+import os
 # Define fs as an object with method "exists", which returns false,
 # in order to correctly handle the fs.exists call when HDFS isn't available
 def dummy_fs():
@@ -15,7 +15,7 @@ def get_scoped_session(engine):
 
 def reset_db(forced=False):
     from model import Model, Dataset, ServiceType, Scope, TrainingAlgorithm, ModelMlEngine
-    from config import db, app
+    from config import db, app, fs
 
     if forced:
         app.logger.warning("The database has been reset totally to default")
@@ -49,5 +49,34 @@ def reset_db(forced=False):
     db.session.add_all([random_forest, neural_network])
     db.session.commit()
 
+    model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"])
+    fs.delete(model_files_dir, recursive=True)
+    fs.mkdir(model_files_dir)
+    app.logger.warning("HDSF trained model directory has been emptied")
+
+
+
 def EnumField(enum_class):
     return fields.Field(validate=[OneOf(choices=[e.value for e in enum_class])])
+
+def zip_model_files(engine, model_id):
+    from model import Model, ModelStatus
+    from config import fs, app
+
+    def zip_dir(path, zip_h):
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                zip_h.write(os.path.join(root, file), arcname=file)
+
+    Session = get_scoped_session(engine)
+    session = Session()
+    model = session.query(Model).get(model_id)
+    model_folder = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"])
+    model_id_folder = os.path.join(app.config["LOCAL_HDFS_DIR"] + app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"], str(model_id))
+    zip_fd = fs.open(os.path.join(model_folder, str(model_id) + "_trained_model.zip"), mode='wb')
+    zip_h = ZipFile(zip_fd, "w")
+    zip_dir(model_id_folder, zip_h)
+    zip_h.close()
+    model.status = ModelStatus.trained
+    session.commit()
+    Session.remove()

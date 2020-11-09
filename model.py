@@ -50,6 +50,7 @@ class ModelStatus(str, enum.Enum):
     training = "training"
     not_trained = "not trained"
     training_failed = "training failed"
+    processing = "processing"
 
 
 class Dataset(db.Model):
@@ -76,6 +77,12 @@ class TrainingAlgorithm(db.Model):
     file_name = db.Column(db.String(100))
     output_file_name = db.Column(db.String(100))
 
+
+class InferenceClass(db.Model):
+    __tablename__ = "inference_class"
+    inference_class_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200))
+    file_name = db.Column(db.String(100))
 
 class Model(db.Model):
     __tablename__ = "model"
@@ -104,6 +111,12 @@ class Model(db.Model):
     # scope = association_proxy('training_algorithm', 'scope')
     # service_type = association_proxy('dataset', 'service_type')
     ml_engine = association_proxy('training_algorithm', 'ml_engine')
+    inference_class_id = db.Column(db.Integer, db.ForeignKey('inference_class.inference_class_id'))
+    inference_class = db.relationship('InferenceClass')
+
+    @hybrid_property
+    def download_file_name(self):
+        return str(self.model_id) + "_trained_model.zip"
 
     @hybrid_property
     def scope(self):
