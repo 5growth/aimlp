@@ -7,6 +7,7 @@ from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from marshmallow import fields
 from flask_login import UserMixin
 from rest.utils import EnumField
+from flask import url_for
 import enum
 
 
@@ -84,6 +85,7 @@ class InferenceClass(db.Model):
     name = db.Column(db.String(200))
     file_name = db.Column(db.String(100))
 
+
 class Model(db.Model):
     __tablename__ = "model"
     model_id = db.Column(db.Integer, primary_key=True)
@@ -113,6 +115,11 @@ class Model(db.Model):
     ml_engine = association_proxy('training_algorithm', 'ml_engine')
     inference_class_id = db.Column(db.Integer, db.ForeignKey('inference_class.inference_class_id'))
     inference_class = db.relationship('InferenceClass')
+
+    @hybrid_property
+    def model_file_url(self):
+        if self.validity and self.status == ModelStatus.trained:
+            return url_for('get_model_file', model_id=self.model_id)
 
     @hybrid_property
     def download_file_name(self):
@@ -209,9 +216,10 @@ class ModelSchema(SQLAlchemySchema):
     model_id = auto_field()
     name = auto_field()
     status = auto_field()
-    ml_engine = EnumField(ModelMlEngine)
-    service_type = EnumField(ServiceType)
+    # service_type = EnumField(ServiceType)
+    nsd_id = auto_field()
     scope = EnumField(Scope)
+    ml_engine = EnumField(ModelMlEngine)
     latest_update = auto_field()
     creation_timestamp = auto_field()
     training_timestamp = auto_field()
@@ -220,5 +228,6 @@ class ModelSchema(SQLAlchemySchema):
     external = auto_field()
     author = fields.String()
     accuracy = auto_field()
-    dataset = fields.Nested(DatasetSchema)
-    training_algorithm = fields.Nested(TrainingAlgorithmSchema)
+    # dataset = fields.Nested(DatasetSchema)
+    # training_algorithm = fields.Nested(TrainingAlgorithmSchema)
+    model_file_url = fields.URL()

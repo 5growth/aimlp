@@ -66,7 +66,7 @@ def zip_model_files(engine, model_id):
     def zip_dir(path, zip_h):
         for root, dirs, files in os.walk(path):
             for file in files:
-                zip_h.write(os.path.join(root, file), arcname=file)
+                zip_h.write(os.path.join(root, file), arcname=os.path.relpath(os.path.join(root, file), path))
 
     Session = get_scoped_session(engine)
     session = Session()
