@@ -112,7 +112,7 @@ class Model(db.Model):
     nsd_id = db.Column(db.String(200))
     # scope = association_proxy('training_algorithm', 'scope')
     # service_type = association_proxy('dataset', 'service_type')
-    ml_engine = association_proxy('training_algorithm', 'ml_engine')
+    _ml_engine = db.Column(db.Enum(ModelMlEngine))
     inference_class_id = db.Column(db.Integer, db.ForeignKey('inference_class.inference_class_id'))
     inference_class = db.relationship('InferenceClass')
 
@@ -151,6 +151,19 @@ class Model(db.Model):
     @service_type.expression
     def service_type(cls):
         return case([(cls._service_type == None, Dataset.service_type),], else_ = cls._service_type)
+
+    @hybrid_property
+    def ml_engine(self):
+        if self._ml_engine: return self._ml_engine
+        else: return self.training_algorithm.ml_engine
+
+    @ml_engine.setter
+    def ml_engine(self, ml_engine_value):
+        self._ml_engine = ml_engine_value
+
+    @ml_engine.expression
+    def ml_engine(cls):
+        return case([(cls._ml_engine == None, TrainingAlgorithm.ml_engine),], else_ = cls._ml_engine)
 
     @hybrid_property
     def author(self):

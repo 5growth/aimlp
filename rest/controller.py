@@ -16,10 +16,15 @@ import threading
 # 5. move/compress the model binary in the proper directory
 def start_training(model_id):
     model = Model.query.get_or_404(model_id)
-    # 403 Forbidden: training of not external models is not possible
-    if model.external:
+    # 403 Forbidden: training of not external models is not implemented yet
+    if not model.external:
+        app.logger.error("Training of internal models is not supported yet")
         abort(403)
-
+    if model.status == ModelStatus.trained:
+        app.logger.warning("Model training has been required for an already trained model")
+    if model.status == ModelStatus.training:
+        app.logger.error("Model training has been required for a model that is currently being trained")
+        abort(403)
     model.status = ModelStatus.training
     db.session.commit()
     # TODO discuss/implement points 1,2,3,5

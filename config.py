@@ -33,6 +33,9 @@ os.environ["HADOOP_HOME"] = "/opt/cloudera/parcels/CDH/lib/hadoop/"
 os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-8-oracle-cloudera/"
 # print(os.environ["CLASSPATH"])
 
+# set rest-spark-submit.sh execution permissions
+os.chmod("./rest-spark-submit.sh", 0o764)
+
 # Attach SQLAlchemy and Marshmallow to the Flask app
 db = SQLAlchemy(app)
 ma = Marshmallow(app)

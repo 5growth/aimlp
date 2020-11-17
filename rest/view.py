@@ -16,7 +16,7 @@ def get_models():
 
             # start to train found models
             for idx, model in enumerate(models):
-                if model.status == ModelStatus.not_trained:
+                if not (model.status == ModelStatus.training or model.status == ModelStatus.trained):
                     models[idx] = controller.start_training(model.model_id)
         except InvalidRequestError as e:
             app.logger.error(e)

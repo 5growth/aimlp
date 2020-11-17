@@ -30,10 +30,10 @@
 
             <div class="field">
 			    <span class="select">
-      			<select name="ml_engine">
-        			<option value="None">--Select ML engine--</option>
-                    {% for engine in engines %}
-                        <option value="{{ engine.name }}">{{ engine.value }}</option>
+      			<select name="scope">
+        			<option value="None">--Select scope--</option>
+                    {% for scope in scopes %}
+                        <option value="{{ scope.name }}">{{ scope.value }}</option>
                     {% endfor %}
         		</select>
     			</span>
@@ -41,10 +41,10 @@
 
             <div class="field">
 			    <span class="select">
-      			<select name="scope">
-        			<option value="None">--Select scope--</option>
-                    {% for scope in scopes %}
-                        <option value="{{ scope.name }}">{{ scope.value }}</option>
+      			<select name="ml_engine">
+        			<option value="None">--Select ML engine--</option>
+                    {% for engine in engines %}
+                        <option value="{{ engine.name }}">{{ engine.value }}</option>
                     {% endfor %}
         		</select>
     			</span>
@@ -59,7 +59,7 @@
          	<br />
 
          	<p><span style="color: #808080;">Upload your inference class here...</span></p>
-            <h2 style="text-align: left;"><strong><input type="file" name="inf_class" accept=".py" /></strong></h2>
+            <h2 style="text-align: left;"><strong><input type="file" name="inf_class" accept=".py,.jar" /></strong></h2>
             <br />
 
         	<h2 style="text-align: center;"><strong><input class="button is-block is-info is-large is-fullwidth" type="submit" value="Submit" /></strong></h2>
@@ -91,6 +91,7 @@
         <span style="color:#999999";>Model Name:</span> {{modelName}} <br/>
         <span style="color:#999999";>Network Service Descriptor ID:</span> {{modelNSD_id}} <br/>
         <span style="color:#999999";>Model Scope:</span> {{modelScope}} <br/>
+        <span style="color:#999999";>ML Engine:</span> {{modelEngine}} <br/>
         <span style="color:#999999";>Training Algorithm filename:</span> {{trainingAlgorithmFilename}} <br/>
         <span style="color:#999999";>Inference Class filename:</span> {{infClassFilename}} <br/>
         <span style="color:#999999";>Dataset filename:</span> {{datasetFilename}} <br/>

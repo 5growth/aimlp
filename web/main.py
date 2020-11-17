@@ -6,7 +6,7 @@ import threading
 from datetime import datetime
 from config import db, fs, app
 from model import Model, Dataset, Scope, ModelMlEngine, ModelStatus
-from rest.utils import zip_model_files
+from rest.utils import zip_externally_trained_model_files
 
 main = Blueprint('main', __name__)
 valid_extension_model = ['.zip', '.h5']
@@ -122,8 +122,8 @@ def uploadModel_post():
 
         # zip the uploaded files
         engine = db.get_engine()
-        zip_files_thread = threading.Thread(target=zip_model_files,
-                                           args=(engine, new_model.model_id))
+        zip_files_thread = threading.Thread(target=zip_externally_trained_model_files,
+                                            args=(engine, new_model.model_id))
         zip_files_thread.start()
 
         return render_template('uploadModel.html',
@@ -188,7 +188,7 @@ def uploadTrainingAlgorithm_post():
         flash('Please check the following issues: ' + toBeChecked)
         return redirect(url_for('main.uploadTrainingAlgorithm'))
     else:
-        new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True,
+        new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, ml_engine=modelMlEngine,
                           status="not_trained", validity=True, author=authorAffiliation, training_algorithm_file_name=trainingAlgorithmFilename,
                           dataset_file_name=datasetFilename, inf_class_file_name=infClassFilename)
         db.session.add(new_model)
@@ -197,9 +197,10 @@ def uploadTrainingAlgorithm_post():
         # After the model correctness is checked against DB constraints, add the file in the HDFS
         fs.mkdir(os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"], str(new_model.model_id)))
         trainingAlgorithmFile_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"],str(new_model.model_id), trainingAlgorithmFilename)
-        infClassFile_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"],str(new_model.model_id),infClassFilename)
+        infClassFile_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"],str(new_model.model_id),infClassFilename)
         datasetFile_path = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"],str(new_model.model_id),datasetFilename)
-
+        fs.mkdir(os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"],
+                              str(new_model.model_id), "staging"))
         fd_training_algorithm = fs.open(trainingAlgorithmFile_path, mode='wb')
         fd_inf = fs.open(infClassFile_path, mode='wb')
         fd_dataset = fs.open(datasetFile_path, mode='wb')
