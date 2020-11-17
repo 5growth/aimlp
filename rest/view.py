@@ -13,6 +13,11 @@ def get_models():
     else:
         try:
             models = Model.query.filter_by(**request.args).all()
+
+            # start to train found models
+            for idx, model in enumerate(models):
+                if model.status == ModelStatus.not_trained:
+                    models[idx] = controller.start_training(model.model_id)
         except InvalidRequestError as e:
             app.logger.error(e)
             # Bad request if the request fails, i.e. the filtered property has not been found
