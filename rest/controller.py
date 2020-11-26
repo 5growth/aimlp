@@ -40,7 +40,7 @@ def get_model_file(model_id):
     model = Model.query.get_or_404(model_id)
 
     # 403 Forbidden / 404 Not Found: cannot complete the request due to the file being unavailable
-    if not model.validity:
+    if not model.status == ModelStatus.trained:
         abort(404)
 
     # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>

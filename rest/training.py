@@ -1,5 +1,5 @@
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from model import Model, ModelStatus, ModelMlEngine
 from rest.utils import get_scoped_session
 from os import path
@@ -65,8 +65,8 @@ def run_training_algorithm(engine, model_id, timeout=None):
     else:
         zip_locally_trained_model_files(model_id, model.ml_engine)
         model.status = ModelStatus.trained
-        model.validity = True
-        model.training_timestamp = datetime.utcnow()
+        model.training_timestamp = datetime.utcnow() + timedelta(days=1)
+        model.validity_expiration_timestamp = datetime.utcnow()
     finally:
         session.commit()
         Session.remove()

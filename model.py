@@ -91,7 +91,6 @@ class Model(db.Model):
     model_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200))
     status = db.Column(db.Enum(ModelStatus), default=ModelStatus.not_trained)
-    validity = db.Column(db.Boolean, default=False)
     external = db.Column(db.Boolean, default=False)
     validity_expiration_timestamp = db.Column(db.DateTime)
     training_timestamp = db.Column(db.DateTime)
@@ -117,8 +116,16 @@ class Model(db.Model):
     inference_class = db.relationship('InferenceClass')
 
     @hybrid_property
+    def validity(self):
+        if self.training_timestamp and self.validity_expiration_timestamp:
+            if self.training_timestamp < self.validity_expiration_timestamp:
+                return True
+            else:
+                return False
+
+    @hybrid_property
     def model_file_url(self):
-        if self.validity and self.status == ModelStatus.trained:
+        if self.status == ModelStatus.trained:
             return url_for('get_model_file', model_id=self.model_id)
 
     @hybrid_property
@@ -237,7 +244,7 @@ class ModelSchema(SQLAlchemySchema):
     creation_timestamp = auto_field()
     training_timestamp = auto_field()
     validity_expiration_timestamp = auto_field()
-    validity = auto_field()
+    validity = fields.Boolean()
     external = auto_field()
     author = fields.String()
     accuracy = auto_field()

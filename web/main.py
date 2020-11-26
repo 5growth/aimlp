@@ -211,7 +211,7 @@ def uploadTrainingAlgorithm_post():
         return redirect(url_for('main.uploadTrainingAlgorithm'))
     else:
         new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, ml_engine=modelMlEngine,
-                          status="not_trained", validity=True, author=authorAffiliation, training_algorithm_file_name=trainingAlgorithmFilename,
+                          status="not_trained", author=authorAffiliation, training_algorithm_file_name=trainingAlgorithmFilename,
                           dataset_file_name=datasetFilename, inf_class_file_name=infClassFilename)
         db.session.add(new_model)
         db.session.commit()
