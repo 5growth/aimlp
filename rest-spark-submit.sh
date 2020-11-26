@@ -24,7 +24,3 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.driver.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
     --conf spark.executor.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
     "$@"
-
-#    --conf "spark.yarn.jars=file://${SPARK_HOME}/jars/*,file://${GPL_LIBS}/*" \
-#    --conf "spark.driver.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \
-#    --conf "spark.executor.extraLibraryPath=/opt/cloudera/parcels/CDH/lib/hadoop/lib/native:/opt/cloudera/parcels/GPLEXTRAS/lib/hadoop/lib/native" \

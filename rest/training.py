@@ -53,8 +53,6 @@ def run_training_algorithm(engine, model_id, timeout=None):
             timeout=timeout,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
-        print(completed_process.stdout)
-
         if completed_process.returncode != 0:
             print(completed_process.stdout)
             raise Exception("Spark-submit exited with a non-zero exit code.",
@@ -65,8 +63,8 @@ def run_training_algorithm(engine, model_id, timeout=None):
     else:
         zip_locally_trained_model_files(model_id, model.ml_engine)
         model.status = ModelStatus.trained
-        model.training_timestamp = datetime.utcnow() + timedelta(days=1)
-        model.validity_expiration_timestamp = datetime.utcnow()
+        model.training_timestamp = datetime.utcnow()
+        model.validity_expiration_timestamp = datetime.utcnow() + timedelta(days=1)
     finally:
         session.commit()
         Session.remove()

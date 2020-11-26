@@ -32,14 +32,14 @@ class ModelMlEngine(str, enum.Enum):
     bigdl = "bigdl"
 
 
-# for semplicity, only a set of service types are available
+# for simplicity, only a set of service types are available
 class ServiceType(str, enum.Enum):
     automotive = "automotive"
     digital_twin = "digital twin"
     content_delivery = "content delivery"
 
 
-# for semplicity, only a set of scopes are available
+# for simplicity, only a set of scopes are available
 class Scope(str, enum.Enum):
     slice_sharing = "slice sharing"
     forecasting = "forecasting"
