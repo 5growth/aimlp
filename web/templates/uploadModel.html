@@ -89,15 +89,15 @@
 <h2 class="subtitle">
     Your model was loaded successfully. Here's the information you entered:</h2>
 
-<div class="column is-4 is-offset-4">
+<div class="column is-6 is-offset-3">
     <div class="box" align="left">
         <span style="color:#999999";>Author:</span> {{name}} {{surname}}<br/>
         <span style="color:#999999";>Author Affiliation:</span> {{authorAffiliation}} <br/>
         <span style="color:#999999";>Model Name:</span> {{modelName}} <br/>
         <span style="color:#999999";>Network Service Descriptor ID:</span> {{modelNSD_id}} <br/>
         <span style="color:#999999";>Model Scope:</span> {{modelScope}} <br/>
-        <span style="color:#999999";>Validity Expiration:</span> {{modelValidity}} <br/>
-        <span style="color:#999999";>Training Date:</span> {{modelTraining}} <br/>
+        <span style="color:#999999";>Validity Expiration:</span> {{modelValidity}}; <span style="color: #ff0000;"><strong> {{validityWarning}} </strong></span> <span style="color: #339966;"><strong> {{validityInfo}} </strong></span><br/>
+        <span style="color:#999999";>Training Date:</span> {{modelTraining}}; <span style="color: #ff0000;"><strong> {{trainingWarning}} </strong></span> <span style="color: #339966;"><strong> {{trainingInfo}} </strong></span><br/> <br/>
         <span style="color:#999999";>Model Accuracy:</span> {{modelAccuracy}} <br/>
         <span style="color:#999999";>Model filename:</span> {{modelFilename}} <br/>
         <span style="color:#999999";>Inference Class filename:</span> {{infClassFilename}} <br/>

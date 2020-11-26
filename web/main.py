@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import threading
 from datetime import datetime
+import datetime as dt
 from config import db, fs, app
 from model import Model, Dataset, Scope, ModelMlEngine, ModelStatus
 from rest.utils import zip_externally_trained_model_files
@@ -45,6 +46,12 @@ def uploadModel_post():
     # convert times
     try:
         modelValidity = datetime.strptime(modelValidity, "%Y-%m-%d %H:%M")
+        if(modelValidity.date()>dt.datetime.today().date()):
+            print("Expires in the future")
+        if(modelValidity.date()<dt.datetime.today().date()):
+            print("Expires in the past")
+        if (modelValidity.date() == dt.datetime.today().date()):
+            print("Expires today")
     except ValueError:
         modelValidity = ""
     try:
@@ -95,8 +102,22 @@ def uploadModel_post():
         flash('Please check the following issues: ' + toBeChecked)
         return redirect(url_for('main.uploadModel'))
     else:
+        if(modelValidity.date()<dt.datetime.today().date()):
+            validityInfo = ""
+            validityWarning = "Warning: model expired in the past!"
+        else:
+            validityWarning = ""
+            validityInfo = "Model expires in " + str((modelValidity.date() - dt.datetime.today().date()).days) + " day(s)"
+
+        if(modelTraining.date()>dt.datetime.today().date()):
+            trainingWarning = "Warning: model trained in the future!"
+            trainingInfo = ""
+        else:
+            trainingInfo = "Modal was trained " + str((dt.datetime.today().date()-modelTraining.date()).days) + " day(s) ago"
+            trainingWarning=""
+
         new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, accuracy=modelAccuracy,
-                          status=ModelStatus.processing, validity=True, validity_expiration_timestamp=modelValidity,
+                          status=ModelStatus.processing, validity_expiration_timestamp=modelValidity,
                           training_timestamp=modelTraining,
                           author=authorAffiliation, trained_model_file_name=modelFilename,
                           inf_class_file_name=infClassFilename)
@@ -132,7 +153,8 @@ def uploadModel_post():
                                modelName=modelName, modelScope=modelScope, modelNSD_id=modelNSD,
                                modelValidity=modelValidity, modelTraining=modelTraining,
                                authorAffiliation=authorAffiliation, modelFilename=modelFilename,
-                               infClassFilename=infClassFilename)
+                               infClassFilename=infClassFilename, validityWarning=validityWarning,
+                               validityInfo=validityInfo, trainingWarning=trainingWarning, trainingInfo=trainingInfo)
 
 
 @main.route('/uploadTrainingAlgorithm')
