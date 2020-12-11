@@ -63,8 +63,8 @@ def run_training_algorithm(engine, model_id, timeout=None):
     else:
         zip_locally_trained_model_files(model_id, model.ml_engine)
         model.status = ModelStatus.trained
-        model.training_timestamp = datetime.utcnow()
-        model.validity_expiration_timestamp = datetime.utcnow() + timedelta(days=1)
+        model.training_timestamp = datetime.now()
+        model.validity_expiration_timestamp = datetime.now() + timedelta(days=1)
     finally:
         session.commit()
         Session.remove()
