@@ -39,7 +39,7 @@ def run_training_algorithm(engine, model_id, timeout=None):
                                           "staging/")
         elif model.ml_engine == ModelMlEngine.bigdl:
             trained_model_uri = path.join("hdfs://" + app.config["HDFS_ROOT_DIR"],
-                                          app.config["HDFS_MODELS_DIR"], str(model_id))
+                                          app.config["HDFS_MODELS_DIR"], str(model_id)+"/")
         else:
             raise Exception("ML engine cannot be '" + str(model.ml_engine) + "'.")
 

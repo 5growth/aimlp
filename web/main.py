@@ -46,12 +46,6 @@ def uploadModel_post():
     # convert times
     try:
         modelValidity = datetime.strptime(modelValidity, "%Y-%m-%d %H:%M")
-        if(modelValidity.date()>dt.datetime.today().date()):
-            print("Expires in the future")
-        if(modelValidity.date()<dt.datetime.today().date()):
-            print("Expires in the past")
-        if (modelValidity.date() == dt.datetime.today().date()):
-            print("Expires today")
     except ValueError:
         modelValidity = ""
     try:
@@ -113,7 +107,7 @@ def uploadModel_post():
             trainingWarning = "Warning: model trained in the future!"
             trainingInfo = ""
         else:
-            trainingInfo = "Modal was trained " + str((dt.datetime.today().date()-modelTraining.date()).days) + " day(s) ago"
+            trainingInfo = "Model was trained " + str((dt.datetime.today().date()-modelTraining.date()).days) + " day(s) ago"
             trainingWarning=""
 
         new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, accuracy=modelAccuracy,

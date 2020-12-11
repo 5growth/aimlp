@@ -32,18 +32,6 @@ def reset_db(forced=False):
         Model.__table__.create(db.engine)
         Dataset.__table__.create(db.engine)
 
-    neural_network_algo = TrainingAlgorithm(name="automotive_scaling_nn_bigdl", scope=Scope.scaling,
-                                            file_name="rest-bigdl-scaling-training.py", ml_engine=ModelMlEngine.bigdl,
-                                            author="Polito")
-    scaling_dataset = Dataset(name="evs_scaling", service_type=ServiceType.automotive,
-                              author="Polito")
-    neural_network = Model(name="neural network for scaling",
-                           trained_model_file_name="model.bigdl",
-                           external=False,
-                           dataset=scaling_dataset,
-                           training_algorithm=neural_network_algo)
-    db.session.add_all([neural_network])
-    db.session.commit()
 
     model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"])
     not_trained_model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"])

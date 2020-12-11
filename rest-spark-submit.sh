@@ -16,11 +16,12 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-memory 2g \
     --driver-memory 2g \
     --executor-cores 2 \
-    --num-executors 3 \
+    --num-executors 2 \
     --properties-file ${BigDL_HOME}/conf/spark-bigdl.conf \
     --jars ${BigDL_JAR_PATH} \
     --py-files ${PYTHON_API_PATH} \
     --archives ${VENV_HOME}/environment.tar.gz#environment \
     --conf spark.driver.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
     --conf spark.executor.extraClassPath=bigdl-SPARK_2.4-${BigDL_VERSION}-jar-with-dependencies.jar \
+    --class com.growth.spark.TrainingGetFromKafka \
     "$@"
