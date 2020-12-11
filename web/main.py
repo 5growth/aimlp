@@ -8,6 +8,7 @@ import datetime as dt
 from config import db, fs, app
 from model import Model, Dataset, Scope, ModelMlEngine, ModelStatus
 from rest.utils import zip_externally_trained_model_files
+from rest.controller import start_training
 
 main = Blueprint('main', __name__)
 valid_extension_model = ['.zip', '.h5']
@@ -209,6 +210,7 @@ def uploadTrainingAlgorithm_post():
                           dataset_file_name=datasetFilename, inf_class_file_name=infClassFilename)
         db.session.add(new_model)
         db.session.commit()
+        start_training(new_model.model_id)
 
         # After the model correctness is checked against DB constraints, add the file in the HDFS
         fs.mkdir(os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"], str(new_model.model_id)))
