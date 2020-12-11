@@ -233,7 +233,7 @@ class ModelSchema(SQLAlchemySchema):
         # in production order should be avoided
         ordered = True
 
-    model_id = auto_field()
+    # model_id = auto_field()
     name = auto_field()
     status = auto_field()
     # service_type = EnumField(ServiceType)
