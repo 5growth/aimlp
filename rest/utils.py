@@ -33,6 +33,11 @@ def reset_db(forced=False):
         Dataset.__table__.create(db.engine)
 
 
+    dummy_algo = TrainingAlgorithm()
+
+    db.session.add_all([dummy_algo])
+    db.session.commit()
+
     model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"])
     not_trained_model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"])
     fs.delete(model_files_dir, recursive=True)
