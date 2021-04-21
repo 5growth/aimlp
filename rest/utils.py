@@ -18,7 +18,7 @@ def get_scoped_session(engine):
 
 
 def reset_db(forced=False):
-    from model import Model, Dataset, ServiceType, Scope, TrainingAlgorithm, ModelMlEngine
+    from model import Model, Dataset, ServiceType, Scope, TrainingAlgorithm, ModelMlEngine, DatasetCollector
     from config import db, app, fs
 
     if forced:
@@ -26,12 +26,13 @@ def reset_db(forced=False):
         db.drop_all()
         db.create_all()
     else:
-        app.logger.warning("The Model and Dataset tables have been reset to default")
+        app.logger.warning("The Model, Dataset and Collector tables have been reset to default")
         Model.__table__.drop(db.engine)
         Dataset.__table__.drop(db.engine)
+        DatasetCollector.__table__.drop(db.engine)
         Model.__table__.create(db.engine)
         Dataset.__table__.create(db.engine)
-
+        DatasetCollector.__table__.create(db.engine)
 
     dummy_algo = TrainingAlgorithm()
 
@@ -40,10 +41,11 @@ def reset_db(forced=False):
 
     model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_MODELS_DIR"])
     not_trained_model_files_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_NOT_TRAINED_MODELS_DIR"])
-    fs.delete(model_files_dir, recursive=True)
-    fs.delete(not_trained_model_files_dir, recursive=True)
-    fs.mkdir(model_files_dir)
-    fs.mkdir(not_trained_model_files_dir)
+    metrics_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_METRICS_DIR"])
+    hdfs_dirs = [model_files_dir, not_trained_model_files_dir, metrics_dir]
+    for d in hdfs_dirs:
+        fs.delete(d, recursive=True)
+        fs.mkdir(d)
     app.logger.warning("HDSF trained and not trained model directories have been emptied")
 
 

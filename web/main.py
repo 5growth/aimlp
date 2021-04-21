@@ -205,7 +205,7 @@ def uploadTrainingAlgorithm_post():
         flash('Please check the following issues: ' + toBeChecked)
         return redirect(url_for('main.uploadTrainingAlgorithm'))
     else:
-        new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=True, ml_engine=modelMlEngine,
+        new_model = Model(name=modelName, scope=modelScope, nsd_id=modelNSD, external=False, ml_engine=modelMlEngine,
                           status="not_trained", author=authorAffiliation, training_algorithm_file_name=trainingAlgorithmFilename,
                           dataset_file_name=datasetFilename, inf_class_file_name=infClassFilename)
         db.session.add(new_model)

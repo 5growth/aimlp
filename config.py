@@ -1,4 +1,5 @@
 import os
+from pyspark.sql import SparkSession
 import subprocess
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -24,19 +25,20 @@ app.config["LOCAL_HDFS_DIR"] = str(Path.home().joinpath('hdfs'))
 app.config["HDFS_ROOT_DIR"] = "/user/worker/"
 app.config["HDFS_MODELS_DIR"] = "model_files/"
 app.config["HDFS_NOT_TRAINED_MODELS_DIR"] = "not_trained_model_files/"
-
+app.config["HDFS_METRICS_DIR"] = "metrics/"
 os.environ["ARROW_LIBHDFS_DIR"] = "/opt/cloudera/parcels/CDH/lib/"
 os.environ["HADOOP_HOME"] = "/opt/cloudera/parcels/CDH/lib/hadoop/"
 # os.environ["CLASSPATH"] = ":" + subprocess.run(["hdfs", "classpath", "--glob"],
 #                                           capture_output=True,
 #                                           text=True).stdout.strip()
 os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-8-oracle-cloudera/"
+#os.environ["HADOOP_CONF_DIR"] = "/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/lib/spark/conf/yarn-conf:/etc/hive/conf"
 # print(os.environ["CLASSPATH"])
 
 # set rest-spark-submit.sh execution permissions
 os.chmod("./rest-spark-submit.sh", 0o764)
-
-# Attach SQLAlchemy and Marshmallow to the Flask app
+os.chmod("./rest-spark-submit_light.sh", 0o764)
+ # Attach SQLAlchemy and Marshmallow to the Flask app
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
@@ -74,6 +76,11 @@ if not os.path.ismount(app.config["LOCAL_HDFS_DIR"]):
         app.logger.warning(str(e) + ". HDFS could not be mounted as local file system")
 else:
     app.logger.info("HDFS is already accessible as local file system")
+
+# start a Spark Session
+spark = SparkSession.builder.master("local[1]").appName("AIML-kafka-connector") \
+    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.0") \
+    .getOrCreate()
 
 
 # blueprint for auth routes in our app

@@ -52,7 +52,14 @@ class ModelStatus(str, enum.Enum):
     not_trained = "not trained"
     training_failed = "training failed"
     processing = "processing"
+    error = "error"
 
+class CollectorStatus(str, enum.Enum):
+    started = "started"
+    terminated = "terminated"
+    processed = "processed"
+    processing = "processing"
+    error = "error"
 
 class Dataset(db.Model):
     __tablename__ = "dataset"
@@ -200,6 +207,19 @@ class Model(db.Model):
         ], else_ = cls._author)
 
 
+class DatasetCollector(db.Model):
+    __tablename__ = "dataset_collector"
+    collector_id = db.Column(db.Integer, primary_key=True)  # primary keys are required by SQLAlchemy
+    kafka_topic = db.Column(db.String(300), unique=True)
+    kafka_server = db.Column(db.String(300))
+    nsd_id = db.Column(db.String(200))
+    status = db.Column(db.Enum(CollectorStatus))
+    creation_timestamp = db.Column(db.DateTime, default=datetime.now)
+    termination_timestamp = db.Column(db.DateTime)
+    latest_update = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    metric_query_id = db.Column(db.String(50))
+    il_query_id = db.Column(db.String(50))
+
 class DatasetSchema(SQLAlchemySchema):
     class Meta:
         model = Dataset
@@ -233,7 +253,7 @@ class ModelSchema(SQLAlchemySchema):
         # in production order should be avoided
         ordered = True
 
-    # model_id = auto_field()
+    model_id = auto_field()
     name = auto_field()
     status = auto_field()
     # service_type = EnumField(ServiceType)
@@ -251,3 +271,15 @@ class ModelSchema(SQLAlchemySchema):
     # dataset = fields.Nested(DatasetSchema)
     # training_algorithm = fields.Nested(TrainingAlgorithmSchema)
     model_file_url = fields.URL()
+
+class CollectorSchema(SQLAlchemySchema):
+    class Meta:
+        model = DatasetCollector
+        ordered = True
+    kafka_topic = auto_field(required=True)
+    kafka_server = auto_field(required=True)
+    nsd_id = auto_field(required=True)
+    creation_timestamp = auto_field()
+    termination_timestamp = auto_field()
+    latest_update = auto_field()
+    status = auto_field()

@@ -5,21 +5,16 @@ from config import app, fs
 from rest.training import run_training_algorithm
 import os.path
 import threading
-
+from rest.kafka_connector_manager import start_streaming, stop_streaming, process_metrics
 
 # This function will do the following:
 # 0. check if the model is trainable or not
-# 1. check that training algorithm requirements (needed python packages) are available in the YARN cluster workers
-# 2. make sure that the training dataset is available before launching the training
-# 3. retrieve optional parameters to be forwarded to the training algorithm
-# 4. start the spark-submit process
-# 5. move/compress the model binary in the proper directory
+# 1. make sure that the training dataset is available before launching the training
+# 2. retrieve optional parameters to be forwarded to the training algorithm
+# 3. start the spark-submit process
+# 4. move/compress the model binary in the proper directory
 def start_training(model_id):
     model = Model.query.get_or_404(model_id)
-    # 403 Forbidden: training of not external models is not implemented yet
-    if not model.external:
-        app.logger.error("Training of internal models is not supported yet")
-        abort(403)
     if model.status == ModelStatus.trained:
         app.logger.warning("Model training has been required for an already trained model")
     if model.status == ModelStatus.training:
@@ -27,7 +22,6 @@ def start_training(model_id):
         abort(403)
     model.status = ModelStatus.training
     db.session.commit()
-    # TODO discuss/implement points 1,2,3,5
     engine = db.get_engine()
     training_thread = threading.Thread(target=run_training_algorithm,
                                        args=(engine, model_id),
@@ -49,6 +43,69 @@ def get_model_file(model_id):
     file_path = os.path.join(file_dir, file_name)
     # 503 Service unavailable: model file should be available but cannot be found in HDFS
     if not fs.exists(file_path):
+        model.status = ModelStatus.error
         abort(503)
     else:
         return fs.open(file_path), model.download_file_name
+
+
+def put_data_collector(collector):
+    active_collector = DatasetCollector(kafka_topic=collector["kafka_topic"],
+                                        kafka_server=collector["kafka_server"],
+                                        nsd_id=collector["nsd_id"],
+                                        status=CollectorStatus.started)
+    try:
+        metric_query, il_query = start_streaming(kafka_topic=active_collector.kafka_topic,
+                                             kafka_server=active_collector.kafka_server,
+                                             nsd_id=active_collector.nsd_id)
+        active_collector.metric_query_id = metric_query
+        active_collector.il_query_id = il_query
+    except Exception as e:
+        app.logger.warning(e)
+        active_collector.status = CollectorStatus.error
+    finally:
+        db.session.add(active_collector)
+        db.session.commit()
+    return active_collector
+
+
+def delete_data_collector(collector):
+    if collector.status == CollectorStatus.started:
+        collector.status = CollectorStatus.terminated
+        collector.termination_timestamp = datetime.now()
+        stop_streaming(collector.metric_query_id, collector.il_query_id)
+        db.session.commit()
+    elif collector.status == CollectorStatus.error:
+        abort(400)
+    elif collector.status == CollectorStatus.terminated:
+        # the collector is not started, therefore cannot be terminated
+        abort(410)
+    return collector
+
+def process_data_collectors(nsd_id):
+    collector = DatasetCollector.query.filter_by(nsd_id=nsd_id).first()
+    if collector is None:
+        abort(404)
+    # for c in collectors:
+    #     if c.status == CollectorStatus.terminated:
+    #         c.status = CollectorStatus.processing
+    #db.session.commit()
+    engine = db.get_engine()
+    processing_thread = threading.Thread(target=process_metrics,
+                                       args=(engine, nsd_id),
+                                       kwargs={"timeout": 1200})
+    processing_thread.start()
+
+def get_dataset_file(nsd_id):
+    collector = DatasetCollector.query.filter_by(nsd_id=nsd_id).filter_by(status=CollectorStatus.processed).first()
+    if collector is None:
+        abort(404)
+
+    # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>
+    file_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_METRICS_DIR"])
+    file_path = os.path.join(file_dir, nsd_id, "complete")
+    # 503 Service unavailable: model file should be available but cannot be found in HDFS
+    if not fs.exists(file_path):
+        abort(404)
+    else:
+        return fs.open(file_path)
