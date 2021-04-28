@@ -5,7 +5,7 @@ from config import app, fs
 from rest.training import run_training_algorithm
 import os.path
 import threading
-from rest.kafka_connector_manager import start_streaming, stop_streaming, process_metrics
+from rest.kafka_connector_manager import start_streaming, stop_streaming, process_metrics, get_dataset_dict_from_nsd
 
 # This function will do the following:
 # 0. check if the model is trainable or not
@@ -71,41 +71,24 @@ def put_data_collector(collector):
 
 def delete_data_collector(collector):
     if collector.status == CollectorStatus.started:
-        collector.status = CollectorStatus.terminated
-        collector.termination_timestamp = datetime.now()
+        collector.status = CollectorStatus.processing
         stop_streaming(collector.metric_query_id, collector.il_query_id)
         db.session.commit()
-    elif collector.status == CollectorStatus.error:
-        abort(400)
+
+        engine = db.get_engine()
+        processing_thread = threading.Thread(target=process_metrics,
+                                             args=(engine, collector.collector_id),
+                                             kwargs={"timeout": 1200})
+        processing_thread.start()
+
     elif collector.status == CollectorStatus.terminated:
         # the collector is not started, therefore cannot be terminated
         abort(410)
     return collector
 
-def process_data_collectors(nsd_id):
-    collector = DatasetCollector.query.filter_by(nsd_id=nsd_id).first()
-    if collector is None:
-        abort(404)
-    # for c in collectors:
-    #     if c.status == CollectorStatus.terminated:
-    #         c.status = CollectorStatus.processing
-    #db.session.commit()
-    engine = db.get_engine()
-    processing_thread = threading.Thread(target=process_metrics,
-                                       args=(engine, nsd_id),
-                                       kwargs={"timeout": 1200})
-    processing_thread.start()
 
 def get_dataset_file(nsd_id):
-    collector = DatasetCollector.query.filter_by(nsd_id=nsd_id).filter_by(status=CollectorStatus.processed).first()
+    collector = DatasetCollector.query.filter_by(nsd_id=nsd_id).filter_by(status=CollectorStatus.terminated).first()
     if collector is None:
         abort(404)
-
-    # for each model, the model file is located in <MODELS_DIR>/<id>/<file_name>
-    file_dir = os.path.join(app.config["HDFS_ROOT_DIR"], app.config["HDFS_METRICS_DIR"])
-    file_path = os.path.join(file_dir, nsd_id, "complete")
-    # 503 Service unavailable: model file should be available but cannot be found in HDFS
-    if not fs.exists(file_path):
-        abort(404)
-    else:
-        return fs.open(file_path)
+    return get_dataset_dict_from_nsd(nsd_id)

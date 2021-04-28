@@ -78,3 +78,18 @@ def zip_externally_trained_model_files(engine, model_id):
     model.status = ModelStatus.trained
     session.commit()
     Session.remove()
+
+
+def init_started_collectors():
+    from model import DatasetCollector, CollectorStatus
+    from config import app, db
+    error_collectors = DatasetCollector.query.filter_by(status=CollectorStatus.error).all()
+    for c in error_collectors:
+        db.session.delete(c)
+    started_collectors = DatasetCollector.query.filter(DatasetCollector.status != CollectorStatus.terminated).all()
+    for c in started_collectors:
+        c.status = CollectorStatus.error
+    db.session.commit()
+    dirty_count = len(error_collectors) + len(started_collectors)
+    if dirty_count > 0:
+        app.logger.warning(str(dirty_count) + " not terminated collectors were found during startup.")

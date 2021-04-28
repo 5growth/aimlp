@@ -5,7 +5,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
-from rest.utils import dummy_fs
+from rest.utils import dummy_fs, init_started_collectors
 from pathlib import Path
 
 try:
@@ -90,3 +90,5 @@ app.register_blueprint(auth_blueprint)
 # blueprint for non-auth parts of app
 from web.main import main as main_blueprint
 app.register_blueprint(main_blueprint)
+
+init_started_collectors()

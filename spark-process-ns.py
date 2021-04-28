@@ -6,12 +6,13 @@ import os
 import sys
 
 nsd_id = sys.argv[1]
+kafka_topic = sys.argv[2]
 #os.environ["HADOOP_CONF_DIR"] = "/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/lib/spark/conf/yarn-conf"
-spark = SparkSession.builder.master("yarn").appName("AIML-kafka-processor").getOrCreate()
+spark = SparkSession.builder.master("yarn").appName("AIML-process-kafka-" + kafka_topic).getOrCreate()
 
-df_metric_raw = spark.read.load("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id + "/metric_*",
+df_metric_raw = spark.read.load("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id + "/metric_" + kafka_topic,
 	format="csv", inferSchema="true", header="true")
-df_il_raw = spark.read.load("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id +"/il_*",
+df_il_raw = spark.read.load("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id +"/il_" + kafka_topic,
 	format="csv", inferSchema="true", header="true")
 #df_metric_raw.show(5)
 #df_il_raw.show(5)
@@ -39,5 +40,5 @@ df = df_metric.join(df_il, cond, "left")
 #df.show(truncate=False)
 
 drop_cols = ["metric_name","metric_value","start_timestamp","end_timestamp","nsid_il"]
-df.drop(*drop_cols).orderBy("timestamp").write.mode("overwrite").save("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id + "/complete",
+df.drop(*drop_cols).orderBy("timestamp").coalesce(1).write.mode("overwrite").save("hdfs://master.awe.polito.it:8020/user/worker/metrics/" + nsd_id + "/complete_" + kafka_topic,
 	format="csv", header="true")
