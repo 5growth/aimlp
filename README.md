@@ -37,14 +37,14 @@ The required projects are:
 
 
 To install BigDL, follow the [instructions](https://bigdl-project.github.io/master/#PythonUserGuide/install-without-pip/) in the project documentation.
-It is suggested to build the requirements archive using 'conda pack'. The following code can be used as example:
+It is suggested to build the requirements archive using 'conda pack'. The following commands can be used as example:
 
 
     #!/bin/sh
     conda create -y -n bigdl python=3.6
     conda activate bigdl
     # requirements as provided by bigdl
-    conda install -c conda-forge bigdl/bin/requirements.txt
+    conda install -y -c conda-forge --file bigdl/bin/requirements.txt
     conda pack -o environment.tar.gz
     conda deactivate bigdl
     conda remove --name bigdl --all
@@ -54,6 +54,7 @@ The application is written in Python, so a Python interpreter (version > 3.7) is
 The following packages, which can be installed using pip, are required:
 - flask
 - marshmallow
+- marshmallow-sqlalchemy
 - sqlalchemy
 - flask-sqlalchemy
 - flask-marshmallow
