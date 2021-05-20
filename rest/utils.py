@@ -46,7 +46,7 @@ def reset_db(forced=False):
     for d in hdfs_dirs:
         fs.delete(d, recursive=True)
         fs.mkdir(d)
-    app.logger.warning("HDSF trained and not trained model directories have been emptied")
+    app.logger.warning("HDFS trained and not trained model directories have been emptied")
 
 
 def EnumField(enum_class):
@@ -83,6 +83,9 @@ def zip_externally_trained_model_files(engine, model_id):
 def init_started_collectors():
     from model import DatasetCollector, CollectorStatus
     from config import app, db
+    if not db.engine.dialect.has_table(db.engine, DatasetCollector.__tablename__):
+        app.logger.warning("Dataset collector table not found in the DB. A DB reset may be required")
+        return
     error_collectors = DatasetCollector.query.filter_by(status=CollectorStatus.error).all()
     for c in error_collectors:
         db.session.delete(c)
